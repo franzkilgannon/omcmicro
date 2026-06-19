@@ -466,6 +466,10 @@ th {
   display: none;
 }
 
+.staff-card-list {
+  display: none;
+}
+
 .schedule-grid,
 .card-grid {
   display: grid;
@@ -793,6 +797,50 @@ small {
     overflow: visible;
   }
 
+  .staff-roster-table {
+    display: none;
+  }
+
+  .staff-card-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .staff-card {
+    display: grid;
+    gap: 10px;
+    padding: 13px;
+    border: 1px solid #dbe3e6;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(12, 33, 40, 0.05);
+  }
+
+  .staff-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .staff-card h3 {
+    margin: 0 0 3px;
+    color: #111b20;
+    font-size: 16px;
+    line-height: 1.2;
+  }
+
+  .staff-card p {
+    margin: 0;
+  }
+
+  .staff-card-head p,
+  .staff-card-meta {
+    color: #52646d;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
   .mobile-sort-control {
     display: block;
     margin-bottom: 12px;
@@ -892,6 +940,10 @@ small {
 
   .table-hint {
     font-size: 12px;
+  }
+
+  .staff-card-list + .table-hint {
+    display: none;
   }
 
   .compact-actions {

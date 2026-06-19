@@ -525,7 +525,7 @@ function StaffRoster({ staff, canEdit, onAdd }: { staff: StaffMember[]; canEdit:
         </label>
       </div>
       <div className="table-wrap">
-        <table>
+        <table className="staff-roster-table">
           <thead>
             <tr>
               <SortableTh label="Name" sortKey="name" activeKey={sortKey} direction={sortDirection} onSort={updateSort} />
@@ -543,22 +543,37 @@ function StaffRoster({ staff, canEdit, onAdd }: { staff: StaffMember[]; canEdit:
                 <td data-label="Title">{displayTitle(person.role)}</td>
                 <td data-label="Location">OMC-Micro</td>
                 <td data-label="Status"><Badge tone={person.active ? 'good' : 'neutral'}>{person.active ? 'Active' : 'Inactive'}</Badge></td>
-                <td data-label="Benches"><BenchChips benches={person.benchCompetencies} /></td>
+                <td data-label="Benches"><BenchChips benches={person.benchCompetencies} limit={2} /></td>
                 <td data-label="Shift Pref">{person.shiftPreference}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <div className="staff-card-list">
+        {sortedStaff.map((person) => (
+          <article className="staff-card" key={person.id}>
+            <div className="staff-card-head">
+              <div>
+                <h3>{person.name}</h3>
+                <p>{displayTitle(person.role)}</p>
+              </div>
+              <Badge tone={person.active ? 'good' : 'neutral'}>{person.active ? 'Active' : 'Inactive'}</Badge>
+            </div>
+            <p className="staff-card-meta">{person.shiftPreference} shift / OMC-Micro</p>
+            <BenchChips benches={person.benchCompetencies} />
+          </article>
+        ))}
+      </div>
       <p className="table-hint">Sorted by {sortKeyToLabel(sortKey)}{sortLabel(sortKey)}. Tap any column header to sort.</p>
     </Panel>
   )
 }
 
-function BenchChips({ benches }: { benches: Bench[] }) {
+function BenchChips({ benches, limit }: { benches: Bench[]; limit?: number }) {
   if (benches.length === 0) return <span className="muted">Not assigned</span>
 
-  const visibleBenches = benches.slice(0, 2)
+  const visibleBenches = typeof limit === 'number' ? benches.slice(0, limit) : benches
   const hiddenCount = benches.length - visibleBenches.length
 
   return (
