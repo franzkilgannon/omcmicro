@@ -1,6 +1,8 @@
 # OMC Micro Operations Hub
 
-A local-first React + TypeScript prototype for internal Microbiology laboratory staffing and operations management. Version 1 uses placeholder data only and stores edits in browser `localStorage`.
+A secure internal Microbiology staffing and operations hub used to coordinate bench coverage, staff competencies, schedules, tasks, SOP reviews, reminders, instrument issues, QC/compliance events, and workflow improvements without storing patient-identifiable information.
+
+Version 1 is a local-first React + TypeScript prototype. It uses mock data and stores edits in browser `localStorage`.
 
 ## Compliance Notes
 
@@ -73,6 +75,8 @@ After DNS propagates, GitHub Pages should issue HTTPS automatically. In GitHub P
 ## Folder Structure
 
 ```text
+docs/
+  working-definition.md  Product definition, design principles, status language, and build order
 src/
   App.tsx       Main application shell, pages, quick-add actions, and audit writes
   App.css       Responsive layout, tables, cards, badges, and print schedule styles
@@ -84,7 +88,7 @@ src/
 
 ## Modules Included
 
-- Dashboard with staffing summary, bench coverage, pending tasks, reminders, due SOP/competency items, and staffing conflict flags
+- Dashboard with today's staffing, bench coverage, needs-attention items, reminders, due SOP/competency items, and staffing conflict flags
 - Staff roster with role/title, location, employment status, competencies, shift preference, restrictions, and active state
 - Schedule builder with week/month views, shift/bench assignments, duplicate assignment detection, coverage gap flags, notes, and print/export
 - Bench competency matrix with status, initial date, annual due date, trainer/preceptor, notes, and due indicators
@@ -114,7 +118,7 @@ Each create or complete action writes a mock audit record with action, item type
 The app stores data under this browser key:
 
 ```text
-omc-micro-lab-db-v1
+omc-micro-lab-db-v3
 ```
 
 Clear site data or remove that key from browser DevTools to reload the seed data.

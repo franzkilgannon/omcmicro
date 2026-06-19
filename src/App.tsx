@@ -393,14 +393,14 @@ function Dashboard({
   return (
     <div className="stack">
       <div className="metric-grid">
-        <Metric label="Staff on today" value={String(todaysAssignments.length)} detail="Scheduled assignments" />
-        <Metric label="Benches covered" value={String(new Set(todaysAssignments.map((item) => item.bench)).size)} detail="Across today's schedule" />
-        <Metric label="Pending tasks" value={String(pendingTasks.length)} detail="Open or in progress" />
-        <Metric label="Due soon" value={String(dueSoonSops.length + dueSoonCompetencies.length)} detail="SOP and competency items" />
+        <Metric label="Today's Staffing" value={String(todaysAssignments.length)} detail="Scheduled assignments" />
+        <Metric label="Today's Bench Coverage" value={String(new Set(todaysAssignments.map((item) => item.bench)).size)} detail="Benches assigned today" />
+        <Metric label="Needs Attention" value={String(pendingTasks.length + duplicateAssignments.length + insufficientCoverage.length)} detail="Open tasks and coverage flags" />
+        <Metric label="Due Within 30 Days" value={String(dueSoonSops.length + dueSoonCompetencies.length)} detail="SOP and competency items" />
       </div>
 
       <div className="two-column">
-        <Panel title="Today's Staffing Summary" actionLabel="Open schedule" onAction={() => setPage('Schedule')}>
+        <Panel title="Today's Bench Coverage" actionLabel="Open schedule" onAction={() => setPage('Schedule')}>
           <div className="timeline-list">
             {todaysAssignments.map((assignment) => (
               <div className="timeline-row" key={assignment.id}>
@@ -415,7 +415,7 @@ function Dashboard({
           </div>
         </Panel>
 
-        <Panel title="Gaps and Conflicts">
+        <Panel title="Needs Attention">
           <div className="alert-list">
             {duplicateAssignments.map((message) => <AlertRow key={message} message={message} />)}
             {insufficientCoverage.map((message) => <AlertRow key={message} message={message} />)}
