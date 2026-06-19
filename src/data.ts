@@ -300,7 +300,7 @@ export const seedData: LabDatabase = {
   ],
   scheduleAssignments: [
     { id: 'SCH-001', staffId: 'STF-018', date: '2026-06-18', shift: 'Day', bench: 'Bench 2 - Aerobic Cultures', notes: 'Demo bench coverage' },
-    { id: 'SCH-002', staffId: 'STF-002', date: '2026-06-18', shift: 'Evening', bench: 'Bench 4 - Respiratory Culture', notes: 'Demo evening coverage' },
+    { id: 'SCH-002', staffId: 'STF-002', date: '2026-06-18', shift: 'Day', bench: 'Bench 4 - Respiratory Culture', notes: 'Demo day coverage' },
     { id: 'SCH-003', staffId: 'STF-003', date: '2026-06-18', shift: 'Day', bench: 'BACTEC Bench', notes: 'Demo BACTEC coverage' },
     { id: 'SCH-004', staffId: 'STF-008', date: '2026-06-18', shift: 'Day', bench: 'MicroScan', notes: 'Demo MicroScan coverage' },
     { id: 'SCH-005', staffId: 'STF-024', date: '2026-06-18', shift: 'Day', bench: 'Inventory', notes: 'Inventory support' },
