@@ -77,6 +77,7 @@ After DNS propagates, GitHub Pages should issue HTTPS automatically. In GitHub P
 ```text
 docs/
   working-definition.md  Product definition, design principles, status language, and build order
+  role-model.md          Med Tech versus Sr Med Tech capabilities and implementation plan
 src/
   App.tsx       Main application shell, pages, quick-add actions, and audit writes
   App.css       Responsive layout, tables, cards, badges, and print schedule styles
