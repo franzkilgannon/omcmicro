@@ -593,6 +593,86 @@ dd {
   margin: 14px 0 0;
 }
 
+.notebook-checklist,
+.notebook-page ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notebook-checklist li,
+.notebook-page li {
+  position: relative;
+  padding-left: 26px;
+  color: #334851;
+  line-height: 1.45;
+}
+
+.notebook-checklist li::before,
+.notebook-page li::before {
+  position: absolute;
+  top: 0.25em;
+  left: 0;
+  display: inline-grid;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  border: 2px solid #7da9b2;
+  border-radius: 4px;
+  color: #1d6574;
+  content: "";
+}
+
+.notebook-section-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.notebook-page {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  border-left: 4px solid #1d6574;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 31px,
+      rgba(29, 101, 116, 0.08) 32px
+    );
+}
+
+.notebook-page h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.private-note-list {
+  display: grid;
+  gap: 10px;
+}
+
+.private-note-list article {
+  padding: 12px;
+  border: 1px dashed #d6b25c;
+  border-radius: 7px;
+  background: #fffaf0;
+}
+
+.private-note-list h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.private-note-list p {
+  margin: 0;
+  color: #5d4b28;
+  line-height: 1.4;
+}
 .bench-source-grid,
 .bench-guide-grid {
   display: grid;
@@ -716,7 +796,8 @@ small {
   .schedule-grid,
   .card-grid,
   .bench-source-grid,
-  .bench-guide-grid {
+  .bench-guide-grid,
+  .notebook-section-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -881,7 +962,8 @@ small {
   .schedule-grid,
   .card-grid,
   .bench-source-grid,
-  .bench-guide-grid {
+  .bench-guide-grid,
+  .notebook-section-list {
     grid-template-columns: 1fr;
   }
 

@@ -92,7 +92,7 @@ src/
 ## Modules Included
 
 - Dashboard with today's staffing, bench coverage, needs-attention items, reminders, due SOP/competency items, and staffing conflict flags
-- Bench Guides with public-safe bench workspaces for organizing SOP, competency, and workflow improvement planning
+- Bench Guides with public-safe pre-shift notebook pages for bench reminders, organism headings, handoff notes, and future private workup details
 - Staff roster with role/title, location, employment status, competencies, shift preference, restrictions, and active state
 - Schedule builder with week/month views, shift/bench assignments, duplicate assignment detection, coverage gap flags, notes, and print/export
 - Bench competency matrix with status, initial date, annual due date, trainer/preceptor, notes, and due indicators

@@ -1,24 +1,15 @@
-export type BenchGuideVisibility = 'Public-safe' | 'Restricted future content'
+export type BenchGuideVisibility = 'Public-safe' | 'Private detail'
 
-export interface BenchGuideSource {
+export interface BenchNotebookSection {
   title: string
-  detail: string
-  status: string
-}
-
-export interface BenchGuideSection {
-  title: string
-  intent: string
-  visibility: BenchGuideVisibility
+  kicker: string
   items: string[]
 }
 
-export interface BenchGuideIntakeItem {
+export interface BenchPrivateNote {
   title: string
-  source: string
-  bucket: string
+  summary: string
   visibility: BenchGuideVisibility
-  nextAction: string
 }
 
 export interface BenchGuide {
@@ -27,221 +18,111 @@ export interface BenchGuide {
   subtitle: string
   overview: string
   reviewStatus: string
-  sourceDocs: BenchGuideSource[]
-  sections: BenchGuideSection[]
-  intakeItems: BenchGuideIntakeItem[]
-  improvementQuestions: string[]
-  futureFields: string[]
+  quickStart: string[]
+  notebookSections: BenchNotebookSection[]
+  privateNotes: BenchPrivateNote[]
+  shiftReminders: string[]
 }
 
 export const benchGuides: BenchGuide[] = [
   {
     id: 'bench-3-urine-cultures',
     name: 'Bench 3 - Urine Cultures',
-    subtitle: 'Urine culture visibility map',
+    subtitle: 'Pre-shift notebook',
     overview:
-      'Organizes the urine bench into review buckets so SOP structure, training needs, competency checkpoints, reminders, and workflow improvement ideas can be discussed without publishing restricted procedure details.',
-    reviewStatus: 'Initial intake',
-    sourceDocs: [
-      {
-        title: 'Urine culture SOP',
-        detail: 'Use for official section structure, ownership, review status, and SOP tracker linkage.',
-        status: 'Structure only',
-      },
-      {
-        title: 'Notebook quick notes',
-        detail: 'Use headings and themes to identify what should become checklists, training cards, or senior-review items.',
-        status: 'Needs review',
-      },
-      {
-        title: 'Legacy LIS labels',
-        detail:
-          'O-prefix examples such as OSEC and OPYR indicate historical Ochsner Main Campus performance in the prior LIS.',
-        status: 'Normalize later',
-      },
+      'A quick read before starting the urine bench: what to check, what to keep visible, and which organism notes need the current approved bench guidance.',
+    reviewStatus: 'Draft notebook',
+    quickStart: [
+      'Open the urine bench worklist and scan pending reads, workups, and follow-ups.',
+      'Check QC, temperatures, reagent checks, and decontamination items before settling into culture reads.',
+      'Separate plates or pending items into simple reads, workups, and follow-up review.',
+      'Use the current SOP and senior tech guidance for exact workup and reporting decisions.',
     ],
-    sections: [
+    notebookSections: [
       {
-        title: 'Daily Readiness',
-        intent: 'Turn routine bench opening and closing work into task/checklist items.',
-        visibility: 'Public-safe',
+        title: 'Before You Start',
+        kicker: 'Get oriented before touching the stack.',
         items: [
-          'Temperature, QC, decontamination, reagent, and logbook checks.',
-          'Weekend urine bench support reminders.',
-          'Items that should connect to QC/compliance logs.',
+          'Look for anything already pending from the prior day or handoff.',
+          'Make sure the bench has what it needs for the first pass through urine cultures.',
+          'Keep questionable items visible instead of burying them under routine reads.',
         ],
       },
       {
-        title: 'Screening Workflow',
-        intent: 'Separate screening concepts from step-by-step procedural text.',
-        visibility: 'Restricted future content',
+        title: 'QC and Temperatures',
+        kicker: 'Do the housekeeping early so it does not chase you later.',
         items: [
-          '18-hour urine screen.',
-          '24-hour urine screen.',
-          'Read-category decision points.',
+          'Confirm required QC and temperature documentation is entered in the approved Epic/log workflow.',
+          'If a QC or temperature item looks off, pause and ask a senior tech before moving forward.',
+          'Anything unresolved should be easy to find again in the QC/compliance log or handoff.',
         ],
       },
       {
-        title: 'Workup Decision Support',
-        intent: 'Identify future decision-tree cards after senior review.',
-        visibility: 'Restricted future content',
+        title: 'Reading Rhythm',
+        kicker: 'Keep the bench moving without losing the oddball items.',
         items: [
-          'When identification is needed.',
-          'When susceptibility testing is not routinely performed.',
-          'When workup needs escalation or special testing.',
+          'Review timed urine screens first when they are due.',
+          'Group straightforward final/review items away from workups.',
+          'Pull true workups into a separate visible pile or list.',
+          'Do not let special follow-up items hide inside the routine stack.',
         ],
       },
       {
-        title: 'Organism-Specific Notes',
-        intent: 'Group organism notes so they are easier to validate and maintain.',
-        visibility: 'Restricted future content',
+        title: 'Organism Reminders',
+        kicker: 'These are memory joggers, not final procedure text.',
         items: [
-          'Coagulase-negative Staphylococcus.',
-          'Yeast.',
-          'Alpha hemolytic / viridans Streptococcus.',
-          'Group B Streptococcus.',
-          'Enterococcus.',
-          'Aerococcus, diphtheroids, Lactobacillus, and related urine notes.',
+          'Enterococcus group: check current bench note for confirmatory workup, Epic section workflow, and required code before finalizing.',
+          'Yeast: confirm whether identification, comment, or additional handling is needed.',
+          'Coag-negative Staph: verify reporting and susceptibility expectations before adding extra work.',
+          'Group B Strep: check current SOP or senior tech guidance before finalizing.',
+          'Diphtheroids, Lactobacillus, Aerococcus, and viridans group: review expected reporting notes before final.',
         ],
       },
       {
-        title: 'Special Testing / Exceptions',
-        intent: 'Keep uncommon or high-risk paths visible without publishing internal procedure text.',
-        visibility: 'Restricted future content',
+        title: 'Epic and Legacy LIS',
+        kicker: 'Use current naming and do not let old LIS habits confuse the workflow.',
         items: [
-          'ESBL workflow bucket.',
-          'TZP for Acinetobacter bucket.',
-          'Carba-R bucket.',
-          'GN broth follow-up bucket.',
+          'Use current Epic workflow names when documenting urine workups.',
+          'Legacy O-prefix labels from the old LIS are historical OMC Main indicators only.',
+          'Do not copy old LIS strings forward unless they have been validated for current workflow.',
         ],
       },
       {
-        title: 'Legacy LIS and Epic Normalization',
-        intent: 'Track old LIS naming so future Epic-era terminology stays clean.',
-        visibility: 'Restricted future content',
+        title: 'Before You Leave',
+        kicker: 'Make the next handoff boring and clear.',
         items: [
-          'O-prefix labels are historical site indicators, not separate bench procedures.',
-          'Create a controlled mapping table later if needed.',
-          'Use synthetic examples only in the public app.',
+          'Check pending workups, unresolved QC items, and anything needing senior review.',
+          'Leave a clear handoff note for anything that should not be finalized yet.',
+          'Do not copy patient identifiers into this website or any public planning note.',
         ],
       },
     ],
-    intakeItems: [
+    privateNotes: [
       {
-        title: 'Temp, QC, decon',
-        source: 'Notebook',
-        bucket: 'Daily Readiness',
-        visibility: 'Public-safe',
-        nextAction: 'Convert to checklist categories after supervisor review.',
+        title: 'Enterococcus exact workup details',
+        summary: 'Confirmatory test names, Epic section workflow, and code-level reminders belong in the private version.',
+        visibility: 'Private detail',
       },
       {
-        title: '18-hour urine screen',
-        source: 'Notebook',
-        bucket: 'Screening Workflow',
-        visibility: 'Restricted future content',
-        nextAction: 'Create a decision-card draft in private storage only.',
+        title: 'Exact Epic strings and codes',
+        summary: 'Keep build-specific names, codes, and finalization steps out of the public site.',
+        visibility: 'Private detail',
       },
       {
-        title: '24-hour urine screen',
-        source: 'Notebook',
-        bucket: 'Screening Workflow',
-        visibility: 'Restricted future content',
-        nextAction: 'Link to SOP tracker and competency review.',
+        title: 'SOP report wording',
+        summary: 'Final report phrases and organism-specific comments should be linked from approved SOP content later.',
+        visibility: 'Private detail',
       },
       {
-        title: 'Workups',
-        source: 'Notebook',
-        bucket: 'Workup Decision Support',
-        visibility: 'Restricted future content',
-        nextAction: 'Split into organism groups and senior-review flags.',
-      },
-      {
-        title: 'No MicroScan / sensitivity',
-        source: 'Notebook',
-        bucket: 'Workup Decision Support',
-        visibility: 'Restricted future content',
-        nextAction: 'Keep as restricted policy-support content until approved.',
-      },
-      {
-        title: 'Coag-negative Staph',
-        source: 'Notebook',
-        bucket: 'Organism-Specific Notes',
-        visibility: 'Restricted future content',
-        nextAction: 'Validate wording against current SOP and Epic workflow.',
-      },
-      {
-        title: 'Yeast',
-        source: 'Notebook',
-        bucket: 'Organism-Specific Notes',
-        visibility: 'Restricted future content',
-        nextAction: 'Use synthetic examples only if this becomes training content.',
-      },
-      {
-        title: 'Alpha hemolytic / viridans Strep',
-        source: 'Notebook',
-        bucket: 'Organism-Specific Notes',
-        visibility: 'Restricted future content',
-        nextAction: 'Group with other organism note cards.',
-      },
-      {
-        title: 'Group B Strep',
-        source: 'Notebook',
-        bucket: 'Organism-Specific Notes',
-        visibility: 'Restricted future content',
-        nextAction: 'Mark for senior review because it can affect follow-up logic.',
-      },
-      {
-        title: 'Enterococcus',
-        source: 'Notebook',
-        bucket: 'Organism-Specific Notes',
-        visibility: 'Restricted future content',
-        nextAction: 'Separate identification notes from report wording examples.',
-      },
-      {
-        title: 'ESBL',
-        source: 'Notebook',
-        bucket: 'Special Testing / Exceptions',
-        visibility: 'Restricted future content',
-        nextAction: 'Create restricted special-testing bucket.',
-      },
-      {
-        title: 'TZP for Acinetobacter',
-        source: 'Notebook',
-        bucket: 'Special Testing / Exceptions',
-        visibility: 'Restricted future content',
-        nextAction: 'Create restricted exception workflow bucket.',
-      },
-      {
-        title: 'Carba-R',
-        source: 'Notebook',
-        bucket: 'Special Testing / Exceptions',
-        visibility: 'Restricted future content',
-        nextAction: 'Create restricted escalation workflow bucket.',
-      },
-      {
-        title: 'General notes and result examples',
-        source: 'Notebook',
-        bucket: 'Improvement Backlog',
-        visibility: 'Restricted future content',
-        nextAction: 'Rewrite as synthetic examples before any public display.',
+        title: 'Special testing exceptions',
+        summary: 'ESBL, Carba-R, TZP, and other exception workflows need authenticated/internal storage.',
+        visibility: 'Private detail',
       },
     ],
-    improvementQuestions: [
-      'Which items are official SOP content versus local bench tips?',
-      'Which steps should become daily tasks, competency checkpoints, or reminders?',
-      'Which organism groups need senior technologist or supervisor review first?',
-      'Which details must wait for authentication, role-based access, and internal hosting?',
-    ],
-    futureFields: [
-      'benchId',
-      'sectionOwner',
-      'sourceDocuments',
-      'reviewStatus',
-      'lastReviewedDate',
-      'visibilityLevel',
-      'linkedSopIds',
-      'linkedCompetencyIds',
-      'linkedTaskTemplateIds',
+    shiftReminders: [
+      'This page is a shift-prep notebook, not the controlling SOP.',
+      'When the notebook and SOP disagree, follow the current approved SOP and escalate.',
+      'Use synthetic or de-identified examples only.',
     ],
   },
 ]

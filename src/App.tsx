@@ -501,9 +501,6 @@ function pageFromPath(pathname: string): PageKey {
 
 function BenchGuides() {
   const guide = benchGuides[0]
-  const restrictedCount = guide.intakeItems.filter(
-    (item) => item.visibility === 'Restricted future content',
-  ).length
 
   return (
     <div className="stack">
@@ -518,48 +515,41 @@ function BenchGuides() {
         </div>
         <div className="bench-guide-meta">
           <div>
-            <span>Sources</span>
-            <strong>{guide.sourceDocs.length}</strong>
+            <span>Quick start</span>
+            <strong>{guide.quickStart.length}</strong>
           </div>
           <div>
-            <span>Review buckets</span>
-            <strong>{guide.sections.length}</strong>
+            <span>Notebook sections</span>
+            <strong>{guide.notebookSections.length}</strong>
           </div>
           <div>
-            <span>Restricted items</span>
-            <strong>{restrictedCount}</strong>
+            <span>Private notes</span>
+            <strong>{guide.privateNotes.length}</strong>
           </div>
         </div>
         <section className="privacy-banner bench-guide-warning">
           <ShieldCheck size={18} />
           <span>
-            This public build stores headings, buckets, and planning notes only. Detailed SOP steps,
-            LIS instructions, report wording, and internal workup rules belong in a future
-            authenticated or internally hosted version.
+            This public build is a shift-prep notebook only. Exact SOP steps, Epic strings, report
+            wording, and code-level organism workups belong in a future authenticated or internally
+            hosted version.
           </span>
         </section>
       </Panel>
 
-      <div className="bench-source-grid">
-        {guide.sourceDocs.map((source) => (
-          <article className="record-card bench-source-card" key={source.title}>
-            <div className="record-head">
-              <h3>{source.title}</h3>
-              <Badge tone={sourceStatusTone(source.status)}>{source.status}</Badge>
-            </div>
-            <p>{source.detail}</p>
-          </article>
-        ))}
-      </div>
+      <Panel title="Read Before Shift">
+        <ul className="notebook-checklist">
+          {guide.quickStart.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </Panel>
 
-      <div className="bench-guide-grid">
-        {guide.sections.map((section) => (
-          <article className="record-card bench-guide-card" key={section.title}>
-            <div className="record-head">
-              <h3>{section.title}</h3>
-              <Badge tone={visibilityTone(section.visibility)}>{visibilityLabel(section.visibility)}</Badge>
-            </div>
-            <p>{section.intent}</p>
+      <div className="notebook-section-list">
+        {guide.notebookSections.map((section) => (
+          <article className="record-card notebook-page" key={section.title}>
+            <p className="eyebrow">{section.kicker}</p>
+            <h3>{section.title}</h3>
             <ul>
               {section.items.map((item) => (
                 <li key={item}>{item}</li>
@@ -569,55 +559,27 @@ function BenchGuides() {
         ))}
       </div>
 
-      <Panel title="Bench 3 Intake Map">
-        <p className="table-hint">
-          Use this as the sorting board when you send more Bench 3 notes. Restricted rows are
-          placeholders for the future private version.
-        </p>
-        <div className="table-scroll">
-          <table className="bench-intake-table">
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th>Bucket</th>
-                <th>Visibility</th>
-                <th>Next action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {guide.intakeItems.map((item) => (
-                <tr key={item.title}>
-                  <td data-label="Item">
-                    <strong>{item.title}</strong>
-                    <small>{item.source}</small>
-                  </td>
-                  <td data-label="Bucket">{item.bucket}</td>
-                  <td data-label="Visibility">
-                    <Badge tone={visibilityTone(item.visibility)}>{visibilityLabel(item.visibility)}</Badge>
-                  </td>
-                  <td data-label="Next action">{item.nextAction}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Panel>
-
       <div className="two-column">
-        <Panel title="Improvement Questions">
-          <ul className="plain-list">
-            {guide.improvementQuestions.map((question) => (
-              <li key={question}>{question}</li>
-            ))}
-          </ul>
-        </Panel>
-
-        <Panel title="Future Data Fields">
-          <div className="field-chip-list">
-            {guide.futureFields.map((field) => (
-              <span key={field}>{field}</span>
+        <Panel title="Private Details To Add Later">
+          <div className="private-note-list">
+            {guide.privateNotes.map((note) => (
+              <article key={note.title}>
+                <div className="record-head">
+                  <h3>{note.title}</h3>
+                  <Badge tone={visibilityTone(note.visibility)}>{visibilityLabel(note.visibility)}</Badge>
+                </div>
+                <p>{note.summary}</p>
+              </article>
             ))}
           </div>
+        </Panel>
+
+        <Panel title="Shift Reminders">
+          <ul className="plain-list">
+            {guide.shiftReminders.map((reminder) => (
+              <li key={reminder}>{reminder}</li>
+            ))}
+          </ul>
         </Panel>
       </div>
     </div>
@@ -629,14 +591,9 @@ function visibilityTone(visibility: BenchGuideVisibility) {
 }
 
 function visibilityLabel(visibility: BenchGuideVisibility) {
-  return visibility === 'Public-safe' ? 'Public safe' : 'Restricted later'
+  return visibility === 'Public-safe' ? 'Public safe' : 'Private later'
 }
 
-function sourceStatusTone(status: string) {
-  if (status === 'Structure only') return 'info'
-  if (status === 'Normalize later') return 'neutral'
-  return 'warn'
-}
 function StaffRoster({ staff, canEdit, onAdd }: { staff: StaffMember[]; canEdit: boolean; onAdd: () => void }) {
   const [sortKey, setSortKey] = useState<StaffSortKey>('name')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
