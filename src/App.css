@@ -5,6 +5,7 @@
   grid-template-columns: 280px minmax(0, 1fr);
   background: #f5f7f8;
   color: #172026;
+  overflow-x: hidden;
 }
 
 .mobile-header,
@@ -118,6 +119,7 @@
   outline: 0;
   background: transparent;
   color: #172026;
+  overflow-x: hidden;
 }
 
 .role-picker span {
@@ -165,6 +167,7 @@
 .panel,
 .record-card,
 .schedule-card {
+  min-width: 0;
   border: 1px solid #dbe3e6;
   border-radius: 8px;
   background: #ffffff;
@@ -413,6 +416,11 @@ button.secondary,
   overflow-x: auto;
 }
 
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
 table {
   width: 100%;
   min-width: 900px;
@@ -532,6 +540,139 @@ dd {
   font-weight: 700;
 }
 
+.bench-guide-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.bench-guide-hero > * {
+  min-width: 0;
+}
+
+.bench-guide-hero h3 {
+  margin: 2px 0 8px;
+  font-size: 22px;
+}
+
+.bench-guide-hero p:last-child {
+  max-width: 780px;
+  color: #5d6b73;
+}
+
+.bench-guide-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.bench-guide-meta div {
+  padding: 12px;
+  border: 1px solid #d8e2e6;
+  border-radius: 7px;
+  background: #f7fafb;
+}
+
+.bench-guide-meta span {
+  display: block;
+  color: #66757c;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.bench-guide-meta strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 24px;
+}
+
+.bench-guide-warning {
+  margin: 14px 0 0;
+}
+
+.bench-source-grid,
+.bench-guide-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.bench-source-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.bench-guide-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.bench-source-card p,
+.bench-guide-card p {
+  margin: 0;
+  color: #4c5f68;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.bench-guide-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.bench-guide-card ul {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding-left: 18px;
+  color: #40525b;
+}
+
+.bench-guide-card li {
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.bench-intake-table {
+  table-layout: fixed;
+}
+
+.bench-intake-table td:first-child strong,
+.bench-intake-table td:first-child small {
+  display: block;
+}
+
+.bench-intake-table td:first-child small {
+  margin-top: 4px;
+}
+
+.plain-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 18px;
+  color: #40525b;
+}
+
+.field-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.field-chip-list span {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #eef5f6;
+  color: #214852;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  font-weight: 700;
+}
 .audit-row {
   align-items: flex-start;
   justify-content: flex-start;
@@ -573,7 +714,9 @@ small {
   .three-column,
   .two-column,
   .schedule-grid,
-  .card-grid {
+  .card-grid,
+  .bench-source-grid,
+  .bench-guide-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -736,7 +879,9 @@ small {
   .three-column,
   .two-column,
   .schedule-grid,
-  .card-grid {
+  .card-grid,
+  .bench-source-grid,
+  .bench-guide-grid {
     grid-template-columns: 1fr;
   }
 
@@ -794,6 +939,10 @@ small {
   }
 
   .table-wrap {
+    overflow: visible;
+  }
+
+  .table-scroll {
     overflow: visible;
   }
 
@@ -958,6 +1107,18 @@ small {
   .privacy-banner {
     align-items: flex-start;
     font-size: 13px;
+  }
+
+  .bench-guide-hero {
+    display: grid;
+  }
+
+  .bench-guide-hero h3 {
+    font-size: 19px;
+  }
+
+  .bench-guide-meta {
+    grid-template-columns: 1fr;
   }
 }
 

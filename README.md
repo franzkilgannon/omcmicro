@@ -78,9 +78,11 @@ After DNS propagates, GitHub Pages should issue HTTPS automatically. In GitHub P
 docs/
   working-definition.md  Product definition, design principles, status language, and build order
   role-model.md          Med Tech versus Sr Med Tech capabilities and implementation plan
+  bench-guides.md        Public-safe bench guide structure and Bench 3 intake notes
 src/
   App.tsx       Main application shell, pages, quick-add actions, and audit writes
   App.css       Responsive layout, tables, cards, badges, and print schedule styles
+  benchGuides.ts Public-safe bench guide data and future private-content boundaries
   data.ts       Non-PHI seed data and bench list
   storage.ts    localStorage load/save helpers and audit event factory
   types.ts      TypeScript domain models for future database mapping
@@ -90,6 +92,7 @@ src/
 ## Modules Included
 
 - Dashboard with today's staffing, bench coverage, needs-attention items, reminders, due SOP/competency items, and staffing conflict flags
+- Bench Guides with public-safe bench workspaces for organizing SOP, competency, and workflow improvement planning
 - Staff roster with role/title, location, employment status, competencies, shift preference, restrictions, and active state
 - Schedule builder with week/month views, shift/bench assignments, duplicate assignment detection, coverage gap flags, notes, and print/export
 - Bench competency matrix with status, initial date, annual due date, trainer/preceptor, notes, and due indicators
