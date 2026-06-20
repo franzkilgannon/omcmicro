@@ -109,11 +109,26 @@ const staffRoles = [
   'Inventory Personnel',
 ] as const
 
+const redirectStorageKey = 'omc-micro-redirect-path'
 const today = '2026-06-18'
+
+function initialPathname() {
+  try {
+    const redirectedPath = window.sessionStorage.getItem(redirectStorageKey)
+    if (!redirectedPath) return window.location.pathname
+
+    window.sessionStorage.removeItem(redirectStorageKey)
+    const target = new URL(redirectedPath, window.location.origin)
+    window.history.replaceState(null, '', `${target.pathname}${target.search}${target.hash}`)
+    return target.pathname
+  } catch {
+    return window.location.pathname
+  }
+}
 
 function App() {
   const [db, setDb] = useState<LabDatabase>(() => loadDatabase())
-  const [page, setPageState] = useState<PageKey>(() => pageFromPath(window.location.pathname))
+  const [page, setPageState] = useState<PageKey>(() => pageFromPath(initialPathname()))
   const [query, setQuery] = useState('')
   const [accessRole, setAccessRole] = useState<AccessRole>('Admin/Sr Tech')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
