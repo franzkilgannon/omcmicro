@@ -804,6 +804,78 @@ function titleSortRank(role: StaffMember['role']) {
   return titleOrder[role]
 }
 
+const monthNames = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+]
+
+const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+function initialScheduleMonth() {
+  const current = toLocalDate(today)
+  return current.getFullYear() === 2026 ? current.getMonth() : 0
+}
+
+function toLocalDate(value: string) {
+  return new Date(`${value}T00:00:00`)
+}
+
+function dateKey(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function addDays(date: Date, days: number) {
+  const next = new Date(date)
+  next.setDate(next.getDate() + days)
+  return next
+}
+
+function startOfWeek(date: Date) {
+  return addDays(date, -date.getDay())
+}
+
+function getWeekDays(weekStart: string) {
+  const start = startOfWeek(toLocalDate(weekStart))
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = addDays(start, index)
+    return { date, key: dateKey(date), inMonth: true }
+  })
+}
+
+function getMonthCalendarDays(year: number, month: number) {
+  const firstDay = new Date(year, month, 1)
+  const lastDay = new Date(year, month + 1, 0)
+  const calendarStart = startOfWeek(firstDay)
+  const calendarEnd = addDays(lastDay, 6 - lastDay.getDay())
+  const days: { date: Date; key: string; inMonth: boolean }[] = []
+
+  for (let date = calendarStart; date <= calendarEnd; date = addDays(date, 1)) {
+    days.push({ date, key: dateKey(date), inMonth: date.getMonth() === month })
+  }
+
+  return days
+}
+
+function groupAssignmentsByDate(assignments: ScheduleAssignment[]) {
+  return assignments.reduce<Record<string, ScheduleAssignment[]>>((grouped, assignment) => {
+    grouped[assignment.date] = [...(grouped[assignment.date] ?? []), assignment]
+    return grouped
+  }, {})
+}
+
 function ScheduleBuilder({
   db,
   staffById,
@@ -816,7 +888,15 @@ function ScheduleBuilder({
   onAdd: () => void
 }) {
   const [view, setView] = useState<'Week' | 'Month'>('Week')
-  const items = view === 'Week' ? db.scheduleAssignments.slice(0, 7) : db.scheduleAssignments
+  const [selectedMonth, setSelectedMonth] = useState(() => initialScheduleMonth())
+  const [weekStart, setWeekStart] = useState(() => dateKey(startOfWeek(toLocalDate(today))))
+  const assignmentsByDate = useMemo(
+    () => groupAssignmentsByDate(db.scheduleAssignments),
+    [db.scheduleAssignments],
+  )
+  const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart])
+  const monthDays = useMemo(() => getMonthCalendarDays(2026, selectedMonth), [selectedMonth])
+  const monthLabel = monthNames[selectedMonth]
 
   return (
     <div className="stack">
@@ -825,26 +905,88 @@ function ScheduleBuilder({
           <button className={view === 'Week' ? 'selected' : ''} onClick={() => setView('Week')}>Week</button>
           <button className={view === 'Month' ? 'selected' : ''} onClick={() => setView('Month')}>Month</button>
         </div>
+        {view === 'Week' && (
+          <label className="schedule-picker">
+            <span>Week of</span>
+            <input
+              type="date"
+              value={weekStart}
+              onChange={(event) => setWeekStart(dateKey(startOfWeek(toLocalDate(event.target.value))))}
+            />
+          </label>
+        )}
+        {view === 'Month' && (
+          <label className="schedule-picker">
+            <span>2026 month</span>
+            <select value={selectedMonth} onChange={(event) => setSelectedMonth(Number(event.target.value))}>
+              {monthNames.map((month, index) => (
+                <option value={index} key={month}>{month}</option>
+              ))}
+            </select>
+          </label>
+        )}
         <button className="secondary" onClick={() => window.print()}><Printer size={16} /> Print/export</button>
         {canEdit && <button className="primary" onClick={onAdd}><Plus size={16} /> Add assignment</button>}
       </div>
 
-      <Panel title={`${view} Schedule Builder`}>
-        <div className="schedule-grid print-area">
-          {items.map((assignment) => (
-            <article className="schedule-card" key={assignment.id}>
-              <div>
-                <p className="date-label">{formatDate(assignment.date)}</p>
-                <h3>{assignment.bench}</h3>
-              </div>
-              <Badge tone={assignment.shift === 'Off/PTO' ? 'neutral' : 'info'}>{assignment.shift}</Badge>
-              <p><strong>{staffById[assignment.staffId]?.name}</strong></p>
-              <p>{assignment.notes}</p>
-            </article>
-          ))}
+      <Panel title={view === 'Week' ? 'Weekly Schedule - Sunday to Saturday' : `${monthLabel} 2026 Monthly Schedule`}>
+        <div className={`schedule-calendar print-area ${view === 'Week' ? 'week-calendar' : ''}`}>
+          <div className="calendar-weekdays">
+            {weekdayNames.map((day) => <span key={day}>{day}</span>)}
+          </div>
+          <div className="calendar-grid">
+            {(view === 'Week' ? weekDays : monthDays).map((day) => (
+              <ScheduleDay
+                assignments={assignmentsByDate[day.key] ?? []}
+                currentMonth={selectedMonth}
+                date={day.date}
+                inMonth={view === 'Week' || day.inMonth}
+                key={day.key}
+                staffById={staffById}
+              />
+            ))}
+          </div>
         </div>
       </Panel>
     </div>
+  )
+}
+
+function ScheduleDay({
+  assignments,
+  currentMonth,
+  date,
+  inMonth,
+  staffById,
+}: {
+  assignments: ScheduleAssignment[]
+  currentMonth: number
+  date: Date
+  inMonth: boolean
+  staffById: Record<string, StaffMember>
+}) {
+  return (
+    <article className={`calendar-day ${inMonth ? '' : 'outside-month'}`}>
+      <div className="calendar-date-head">
+        <div>
+          <strong>{date.getDate()}</strong>
+          <span>{weekdayNames[date.getDay()]}</span>
+        </div>
+        {date.getMonth() !== currentMonth && <small>{monthNames[date.getMonth()].slice(0, 3)}</small>}
+      </div>
+      <div className="calendar-assignments">
+        {assignments.length === 0 && <span className="empty-day">No assignment</span>}
+        {assignments.map((assignment) => (
+          <div className="calendar-assignment" key={assignment.id}>
+            <div>
+              <strong>{staffById[assignment.staffId]?.name ?? 'Unassigned'}</strong>
+              <span>{shortBenchName(assignment.bench)}</span>
+            </div>
+            <Badge tone={assignment.shift === 'Off/PTO' ? 'neutral' : 'info'}>{assignment.shift}</Badge>
+          </div>
+        ))}
+      </div>
+    </article>
   )
 }
 

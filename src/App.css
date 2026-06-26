@@ -286,6 +286,148 @@ button.secondary,
   color: #ffffff;
 }
 
+.schedule-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid #ccd7dc;
+  border-radius: 7px;
+  background: #ffffff;
+}
+
+.schedule-picker span {
+  color: #5d6b73;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.schedule-picker input,
+.schedule-picker select {
+  min-height: 34px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #172026;
+}
+
+.schedule-calendar {
+  display: grid;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.calendar-weekdays,
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  min-width: 760px;
+}
+
+.calendar-weekdays {
+  gap: 6px;
+}
+
+.calendar-weekdays span {
+  padding: 8px;
+  border-radius: 6px;
+  background: #f6f9fa;
+  color: #465a63;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.calendar-grid {
+  border: 1px solid #dbe3e6;
+  border-right: 0;
+  border-bottom: 0;
+  background: #dbe3e6;
+}
+
+.calendar-day {
+  min-height: 150px;
+  padding: 9px;
+  border-right: 1px solid #dbe3e6;
+  border-bottom: 1px solid #dbe3e6;
+  background: #ffffff;
+}
+
+.week-calendar .calendar-day {
+  min-height: 240px;
+}
+
+.calendar-day.outside-month {
+  background: #f8fafb;
+}
+
+.calendar-date-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.calendar-date-head strong,
+.calendar-date-head span {
+  display: block;
+}
+
+.calendar-date-head strong {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.calendar-date-head span,
+.calendar-date-head small {
+  color: #66757c;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.calendar-assignments {
+  display: grid;
+  gap: 6px;
+}
+
+.calendar-assignment {
+  display: grid;
+  gap: 5px;
+  padding: 7px;
+  border-radius: 6px;
+  background: #eef5f6;
+}
+
+.calendar-assignment div {
+  min-width: 0;
+}
+
+.calendar-assignment strong,
+.calendar-assignment span {
+  display: block;
+}
+
+.calendar-assignment strong {
+  color: #172026;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.calendar-assignment span {
+  color: #445a63;
+  font-size: 12px;
+}
+
+.empty-day {
+  color: #8a969c;
+  font-size: 12px;
+}
+
+
 .timeline-list {
   display: grid;
   gap: 12px;
