@@ -659,7 +659,7 @@ function StaffRoster({ staff, canEdit, onAdd }: { staff: StaffMember[]; canEdit:
                 <td data-label="Title">{displayTitle(person.role)}</td>
                 <td data-label="Location">OMC-Micro</td>
                 <td data-label="Status"><Badge tone={person.active ? 'good' : 'neutral'}>{person.active ? 'Active' : 'Inactive'}</Badge></td>
-                <td data-label="Benches"><BenchChips benches={person.benchCompetencies} limit={2} /></td>
+                <td data-label="Benches"><BenchChips benches={person.benchCompetencies} /></td>
                 <td data-label="Shift Pref">{person.shiftPreference}</td>
               </tr>
             ))}
@@ -686,18 +686,15 @@ function StaffRoster({ staff, canEdit, onAdd }: { staff: StaffMember[]; canEdit:
   )
 }
 
-function BenchChips({ benches, limit }: { benches: Bench[]; limit?: number }) {
+function BenchChips({ benches }: { benches: Bench[] }) {
   if (benches.length === 0) return <span className="muted">Not assigned</span>
 
-  const visibleBenches = typeof limit === 'number' ? benches.slice(0, limit) : benches
-  const hiddenCount = benches.length - visibleBenches.length
 
   return (
     <div className="bench-chips" title={benches.join(', ')}>
-      {visibleBenches.map((bench) => (
+      {benches.map((bench) => (
         <span className="bench-chip" key={bench}>{shortBenchName(bench)}</span>
       ))}
-      {hiddenCount > 0 && <span className="bench-chip more">+{hiddenCount} more</span>}
     </div>
   )
 }
