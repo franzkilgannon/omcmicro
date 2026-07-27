@@ -30,6 +30,20 @@
   padding: 8px 10px 22px;
 }
 
+button.brand,
+button.mobile-brand {
+  background: none;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sidebar button.brand {
+  width: 100%;
+}
+
 .brand strong,
 .brand span {
   display: block;

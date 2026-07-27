@@ -117,10 +117,8 @@ const routePages = new Map<string, PageKey>(
 const staffRoles = [
   'Lab Assistant',
   'Lab Assistant Trainee',
-  'Clinical/Medical Lab Technician',
-  'Clinical/Medical Laboratory Scientist',
-  'Medical Technologist',
-  'Sr Medical Technologist',
+  'Medical Lab Technician',
+  'Medical Laboratory Scientist',
   'Sr Medical Laboratory Scientist',
   'Lab Education Coordinator',
   'Venipuncture Operations Coordinator',
@@ -310,13 +308,18 @@ function App() {
         >
           <Menu size={22} />
         </button>
-        <div className="mobile-brand">
+        <button
+          type="button"
+          className="mobile-brand"
+          aria-label="Go to dashboard"
+          onClick={() => setPage('Dashboard')}
+        >
           <Microscope size={22} />
           <div>
             <strong>OMC Micro</strong>
             <span>{page}</span>
           </div>
-        </div>
+        </button>
       </header>
 
       {mobileMenuOpen && (
@@ -329,13 +332,21 @@ function App() {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mobile-menu-head">
-              <div className="brand">
+              <button
+                type="button"
+                className="brand"
+                aria-label="Go to dashboard"
+                onClick={() => {
+                  setPage('Dashboard')
+                  setMobileMenuOpen(false)
+                }}
+              >
                 <Microscope size={24} />
                 <div>
                   <strong>OMC Micro</strong>
                   <span>Operations Hub</span>
                 </div>
-              </div>
+              </button>
               <button
                 type="button"
                 className="mobile-menu-close"
@@ -363,13 +374,18 @@ function App() {
       )}
 
       <aside className="sidebar">
-        <div className="brand">
+        <button
+          type="button"
+          className="brand"
+          aria-label="Go to dashboard"
+          onClick={() => setPage('Dashboard')}
+        >
           <Microscope size={28} />
           <div>
             <strong>OMC Micro</strong>
             <span>Operations Hub</span>
           </div>
-        </div>
+        </button>
         <nav aria-label="Primary navigation">
           {navItems.map(({ key, icon: Icon }) => (
             <button
@@ -696,7 +712,11 @@ function StaffRoster({
           <tbody>
             {sortedStaff.map((person) => (
               <tr key={person.id}>
-                <td data-label="Name"><strong>{person.name}</strong></td>
+                <td data-label="Name">
+                  <EditableCell onEdit={onEditDetail && (() => onEditDetail(person, 'name'))}>
+                    <strong>{person.name}</strong>
+                  </EditableCell>
+                </td>
                 <td data-label="Title">
                   <EditableCell onEdit={onEditDetail && (() => onEditDetail(person, 'role'))}>
                     {displayTitle(person.role)}
@@ -738,7 +758,9 @@ function StaffRoster({
           <article className="staff-card" key={person.id}>
             <div className="staff-card-head">
               <div>
-                <h3>{person.name}</h3>
+                <EditableCell onEdit={onEditDetail && (() => onEditDetail(person, 'name'))}>
+                  <h3>{person.name}</h3>
+                </EditableCell>
                 <EditableCell onEdit={onEditDetail && (() => onEditDetail(person, 'role'))}>
                   <p>{displayTitle(person.role)}</p>
                 </EditableCell>
@@ -873,10 +895,8 @@ function displayTitle(role: StaffMember['role']) {
   const titles: Record<StaffMember['role'], string> = {
     'Lab Assistant': 'Lab Assistant',
     'Lab Assistant Trainee': 'Lab Assistant Trainee',
-    'Clinical/Medical Lab Technician': 'Medical Laboratory Technician',
-    'Clinical/Medical Laboratory Scientist': 'Medical Laboratory Scientist',
-    'Medical Technologist': 'Medical Technologist',
-    'Sr Medical Technologist': 'Sr Medical Technologist',
+    'Medical Lab Technician': 'Medical Laboratory Technician',
+    'Medical Laboratory Scientist': 'Medical Laboratory Scientist',
     'Sr Medical Laboratory Scientist': 'Sr Medical Laboratory Scientist',
     'Lab Education Coordinator': 'Lab Education Coordinator',
     'Venipuncture Operations Coordinator': 'Venipuncture Operations Coordinator',
@@ -889,17 +909,15 @@ function displayTitle(role: StaffMember['role']) {
 
 function titleSortRank(role: StaffMember['role']) {
   const titleOrder: Record<StaffMember['role'], number> = {
-    'Sr Medical Technologist': 1,
-    'Sr Medical Laboratory Scientist': 2,
-    'Clinical/Medical Laboratory Scientist': 2,
-    'Medical Technologist': 4,
-    'Clinical/Medical Lab Technician': 5,
-    'Lab Education Coordinator': 6,
-    'Lab Assistant': 7,
-    'Lab Assistant Trainee': 8,
-    'Inventory Coordinator': 9,
-    'Inventory Personnel': 10,
-    'Venipuncture Operations Coordinator': 11,
+    'Sr Medical Laboratory Scientist': 1,
+    'Medical Laboratory Scientist': 2,
+    'Medical Lab Technician': 3,
+    'Lab Education Coordinator': 4,
+    'Lab Assistant': 5,
+    'Lab Assistant Trainee': 6,
+    'Inventory Coordinator': 7,
+    'Inventory Personnel': 8,
+    'Venipuncture Operations Coordinator': 9,
   }
 
   return titleOrder[role]
@@ -1257,7 +1275,7 @@ function addStaff(openForm: OpenForm, updateDb: UpdateDb, user: string) {
     submitLabel: 'Add staff',
     fields: [
       { name: 'name', label: 'Name', type: 'text', required: true, placeholder: 'First Last' },
-      { name: 'role', label: 'Role/title', type: 'select', options: staffRoles, defaultValue: 'Medical Technologist' },
+      { name: 'role', label: 'Role/title', type: 'select', options: staffRoles, defaultValue: 'Medical Laboratory Scientist' },
       { name: 'shiftPreference', label: 'Shift preference', type: 'select', options: shiftTypes, defaultValue: 'Day' },
       { name: 'notes', label: 'Notes', type: 'textarea', placeholder: 'Optional' },
     ],
@@ -1270,7 +1288,7 @@ function addStaff(openForm: OpenForm, updateDb: UpdateDb, user: string) {
             name: values.name,
             role: staffRoles.includes(values.role as never)
               ? (values.role as StaffMember['role'])
-              : 'Medical Technologist',
+              : 'Medical Laboratory Scientist',
             primaryLocation: 'Ochsner Medical Center - Microbiology',
             employmentStatus: 'Full-time',
             benchCompetencies: [],
@@ -1285,7 +1303,7 @@ function addStaff(openForm: OpenForm, updateDb: UpdateDb, user: string) {
   })
 }
 
-type StaffDetailKey = 'role' | 'active' | 'shiftPreference'
+type StaffDetailKey = 'name' | 'role' | 'active' | 'shiftPreference'
 
 function editStaffDetail(
   person: StaffMember,
@@ -1294,8 +1312,43 @@ function editStaffDetail(
   updateDb: UpdateDb,
   user: string,
 ) {
+  if (key === 'name') {
+    openForm({
+      title: `Name - ${person.name}`,
+      submitLabel: 'Save',
+      fields: [
+        {
+          name: 'value',
+          label: 'Name',
+          type: 'text',
+          required: true,
+          defaultValue: person.name,
+          placeholder: 'First Last',
+        },
+      ],
+      onSubmit: (values) => {
+        if (!values.value || values.value === person.name) return
+        updateDb(
+          (draft) => {
+            const target = draft.staff.find((member) => member.id === person.id)
+            if (!target) return
+            target.name = values.value
+          },
+          {
+            action: 'Updated',
+            itemType: 'Staff',
+            itemId: person.id,
+            user,
+            summary: `Renamed ${person.name} to ${values.value}.`,
+          },
+        )
+      },
+    })
+    return
+  }
+
   const configs: Record<
-    StaffDetailKey,
+    Exclude<StaffDetailKey, 'name'>,
     { title: string; label: string; options: readonly string[]; current: string }
   > = {
     role: {

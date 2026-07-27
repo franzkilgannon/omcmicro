@@ -35,7 +35,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-002',
       name: 'Pamela Weeks',
-      role: 'Clinical/Medical Laboratory Scientist',
+      role: 'Medical Laboratory Scientist',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [
@@ -52,7 +52,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-003',
       name: 'Raazia Javed',
-      role: 'Clinical/Medical Laboratory Scientist',
+      role: 'Medical Laboratory Scientist',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: ['BACTEC Bench', 'Bench 3 - Urine Cultures', 'Bench 5 - Stool Kits + MALDI'],
@@ -74,7 +74,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-005',
       name: 'Wanda Johnson',
-      role: 'Clinical/Medical Lab Technician',
+      role: 'Medical Lab Technician',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [],
@@ -107,7 +107,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-008',
       name: 'Lauren Sensebe',
-      role: 'Clinical/Medical Laboratory Scientist',
+      role: 'Medical Laboratory Scientist',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [
@@ -124,7 +124,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-009',
       name: 'Melanie Ellerbe',
-      role: 'Clinical/Medical Laboratory Scientist',
+      role: 'Medical Laboratory Scientist',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [],
@@ -146,7 +146,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-011',
       name: 'Jose Ashby',
-      role: 'Clinical/Medical Laboratory Scientist',
+      role: 'Medical Laboratory Scientist',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [],
@@ -157,7 +157,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-012',
       name: 'Joyce Victoriano',
-      role: 'Clinical/Medical Laboratory Scientist',
+      role: 'Medical Laboratory Scientist',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [],
@@ -168,7 +168,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-013',
       name: 'Jessica Raiford',
-      role: 'Clinical/Medical Lab Technician',
+      role: 'Medical Lab Technician',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [],
@@ -179,7 +179,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-014',
       name: 'Gage Weeks',
-      role: 'Clinical/Medical Lab Technician',
+      role: 'Medical Lab Technician',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [],
@@ -190,7 +190,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-015',
       name: 'Jam Alino',
-      role: 'Clinical/Medical Laboratory Scientist',
+      role: 'Medical Laboratory Scientist',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [],
@@ -201,7 +201,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-016',
       name: 'Jane Jarosz',
-      role: 'Clinical/Medical Laboratory Scientist',
+      role: 'Medical Laboratory Scientist',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [],
@@ -212,7 +212,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-017',
       name: 'Jane Katherina Navora',
-      role: 'Clinical/Medical Laboratory Scientist',
+      role: 'Medical Laboratory Scientist',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [],
@@ -223,7 +223,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-018',
       name: 'Ashlee Breaux',
-      role: 'Sr Medical Technologist',
+      role: 'Sr Medical Laboratory Scientist',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: ['Bench 2 - Aerobic Cultures', 'Bench 4 - Respiratory Culture', 'Anaerobes'],
@@ -234,7 +234,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-019',
       name: 'Christialane Joy Aquino',
-      role: 'Clinical/Medical Laboratory Scientist',
+      role: 'Medical Laboratory Scientist',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [],
@@ -245,7 +245,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-020',
       name: 'Amany Ahmad',
-      role: 'Clinical/Medical Lab Technician',
+      role: 'Medical Lab Technician',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [],
@@ -267,7 +267,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-022',
       name: 'Calliope Karagiannis',
-      role: 'Clinical/Medical Laboratory Scientist',
+      role: 'Medical Laboratory Scientist',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [],
@@ -278,7 +278,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-023',
       name: 'Karla Klump-Carter',
-      role: 'Clinical/Medical Lab Technician',
+      role: 'Medical Lab Technician',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [],
@@ -300,7 +300,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-026',
       name: 'Tamia Tezeno',
-      role: 'Medical Technologist',
+      role: 'Medical Laboratory Scientist',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [],
@@ -311,7 +311,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-027',
       name: 'Seline Nguyen',
-      role: 'Medical Technologist',
+      role: 'Medical Laboratory Scientist',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [],
@@ -322,7 +322,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-028',
       name: 'Pamela Borne',
-      role: 'Medical Technologist',
+      role: 'Medical Laboratory Scientist',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [],
@@ -333,7 +333,7 @@ export const seedData: LabDatabase = {
     {
       id: 'STF-029',
       name: 'Jeborah Rose Tun',
-      role: 'Medical Technologist',
+      role: 'Medical Laboratory Scientist',
       primaryLocation: 'Ochsner Medical Center - Microbiology',
       employmentStatus: 'Full-time',
       benchCompetencies: [],
