@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.110.3",
     "lucide-react": "^1.21.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
@@ -28,5 +29,21 @@
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.12"
-  }
+  },
+  "description": "A secure internal Microbiology staffing and operations hub used to coordinate bench coverage, staff competencies, schedules, tasks, SOP reviews, reminders, instrument issues, QC/compliance events, and workflow improvements without storing patient-identifiable information.",
+  "main": "eslint.config.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/franzkilgannon/omcmicro.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/franzkilgannon/omcmicro/issues"
+  },
+  "homepage": "https://github.com/franzkilgannon/omcmicro#readme"
 }

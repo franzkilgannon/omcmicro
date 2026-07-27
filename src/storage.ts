@@ -1,7 +1,7 @@
 import { seedData } from './data'
 import type { AuditEvent, LabDatabase } from './types'
 
-const STORAGE_KEY = 'omc-micro-lab-db-v3'
+const STORAGE_KEY = 'omc-micro-lab-db-v5'
 
 export function loadDatabase(): LabDatabase {
   const stored = window.localStorage.getItem(STORAGE_KEY)

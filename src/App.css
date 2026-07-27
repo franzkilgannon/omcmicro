@@ -119,7 +119,6 @@
   outline: 0;
   background: transparent;
   color: #172026;
-  overflow-x: hidden;
 }
 
 .role-picker span {
@@ -427,7 +426,6 @@ button.secondary,
   font-size: 12px;
 }
 
-
 .timeline-list {
   display: grid;
   gap: 12px;
@@ -543,7 +541,6 @@ button.secondary,
   font-weight: 800;
   white-space: nowrap;
 }
-
 
 .muted {
   color: #8a969c;
@@ -811,6 +808,7 @@ dd {
   color: #5d4b28;
   line-height: 1.4;
 }
+
 .bench-source-grid,
 .bench-guide-grid {
   display: grid;
@@ -891,11 +889,167 @@ dd {
   font-size: 12px;
   font-weight: 700;
 }
+
 .audit-row {
   align-items: flex-start;
   justify-content: flex-start;
   padding: 10px 0;
   border-bottom: 1px solid #edf1f3;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 5vh 16px calc(16px + env(safe-area-inset-bottom));
+  background: rgba(8, 20, 24, 0.5);
+  overflow-y: auto;
+}
+
+.modal-panel {
+  width: min(520px, 100%);
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(8, 20, 24, 0.35);
+}
+
+.modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 18px 0;
+}
+
+.modal-head h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.modal-head p {
+  margin: 6px 0 0;
+  color: #5d6b73;
+  font-size: 13px;
+}
+
+.modal-close {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 8px;
+  background: #eef2f4;
+  color: #2b3c44;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  background: #e1e8eb;
+}
+
+.modal-form {
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px calc(18px + env(safe-area-inset-bottom));
+}
+
+.modal-field {
+  display: grid;
+  gap: 6px;
+}
+
+.modal-field > span {
+  color: #3a4a52;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.modal-field em {
+  color: #9d2323;
+  font-style: normal;
+}
+
+.modal-field input,
+.modal-field select,
+.modal-field textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 11px;
+  border: 1px solid #ccd7dc;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #172026;
+  font: inherit;
+  font-size: 16px;
+}
+
+.modal-field textarea {
+  min-height: 78px;
+  resize: vertical;
+}
+
+.modal-field input:focus,
+.modal-field select:focus,
+.modal-field textarea:focus {
+  outline: 2px solid #1d6574;
+  outline-offset: 1px;
+  border-color: #1d6574;
+}
+
+.modal-field .invalid {
+  border-color: #c0392b;
+}
+
+.modal-hint {
+  color: #66757c;
+}
+
+.modal-error {
+  color: #9d2323;
+  font-weight: 700;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.modal-actions button {
+  min-height: 44px;
+  padding: 0 16px;
+}
+
+@media (max-width: 720px) {
+  .modal-backdrop {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .modal-panel {
+    width: 100%;
+    min-height: 100%;
+    border-radius: 0;
+  }
+
+  .modal-actions {
+    position: sticky;
+    bottom: 0;
+    flex-direction: column-reverse;
+    padding-top: 12px;
+    margin-top: 8px;
+    background: #ffffff;
+  }
+
+  .modal-actions button {
+    width: 100%;
+  }
 }
 
 small {
@@ -1380,5 +1534,371 @@ small {
   .panel,
   .schedule-card {
     box-shadow: none;
+  }
+}
+
+/* ---------- Live scheduler ---------- */
+
+.auth-card {
+  max-width: 440px;
+  margin: 40px auto;
+  padding: 28px;
+  background: #ffffff;
+  border: 1px solid #dbe3e6;
+  border-radius: 12px;
+}
+
+.auth-card h2 {
+  margin: 0 0 8px;
+}
+
+.auth-card p {
+  color: #5d6b73;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.auth-card form {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.auth-card label {
+  display: grid;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.auth-card input {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid #ccd7dc;
+  border-radius: 7px;
+  font-size: 14px;
+}
+
+.auth-message {
+  margin: 0;
+  padding: 8px 10px;
+  background: #fef4e5;
+  border-radius: 7px;
+  color: #7a5216;
+  font-size: 13px;
+}
+
+.auth-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sched-toolbar {
+  justify-content: space-between;
+}
+
+.sched-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sched-signed-in {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #5d6b73;
+  font-size: 13px;
+}
+
+.sched-month-nav {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.today-strip .today-strip-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.today-strip .today-strip-head h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.today-strip-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.dayoff-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.dayoff-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: #e8f0f2;
+  border: 1px solid #ccd7dc;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1d4650;
+}
+
+.dayoff-chip.struck {
+  text-decoration: line-through;
+  color: #90a0a8;
+  background: #f2f4f5;
+}
+
+.chip-action {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  padding: 1px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.55;
+}
+
+.chip-action:hover {
+  opacity: 1;
+}
+
+.dayoff-day .calendar-date-head .icon-button {
+  opacity: 0.35;
+}
+
+.dayoff-day:hover .calendar-date-head .icon-button {
+  opacity: 1;
+}
+
+.dayoff-day.is-today {
+  outline: 2px solid #1d4650;
+  outline-offset: -2px;
+}
+
+.day-note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  font-style: italic;
+  color: #5d6b73;
+  cursor: pointer;
+}
+
+.day-note:hover {
+  text-decoration: line-through;
+}
+
+.bench-grid-wrap {
+  overflow-x: auto;
+}
+
+.bench-grid-table {
+  border-collapse: collapse;
+  min-width: 1100px;
+}
+
+.bench-grid-table th,
+.bench-grid-table td {
+  border: 1px solid #dbe3e6;
+  padding: 4px;
+  font-size: 12.5px;
+  text-align: left;
+}
+
+.bench-grid-table thead th {
+  background: #eef3f4;
+  white-space: nowrap;
+  padding: 8px 6px;
+}
+
+.bench-grid-table .bench-grid-week {
+  position: sticky;
+  left: 0;
+  background: #eef3f4;
+  white-space: nowrap;
+  padding: 6px 8px;
+  z-index: 1;
+}
+
+.bench-grid-table .bench-grid-week .badge {
+  margin-left: 6px;
+}
+
+.bench-grid-table tr.current-week td {
+  background: #f4fbf6;
+}
+
+.bench-grid-input {
+  width: 100%;
+  min-width: 74px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  padding: 5px 6px;
+  font-size: 12.5px;
+  background: transparent;
+}
+
+.bench-grid-input:hover {
+  border-color: #ccd7dc;
+}
+
+.bench-grid-input:focus {
+  outline: 0;
+  border-color: #1d4650;
+  background: #ffffff;
+}
+
+.override-list {
+  display: grid;
+  gap: 8px;
+}
+
+.override-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid #e3eaec;
+  border-radius: 8px;
+  background: #fbfcfc;
+}
+
+.override-row p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #5d6b73;
+}
+
+.weekend-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.weekend-card.current-weekend {
+  outline: 2px solid #1d4650;
+  outline-offset: -2px;
+}
+
+.weekend-slot-list {
+  display: grid;
+  gap: 4px;
+  margin: 10px 0;
+}
+
+.weekend-slot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.weekend-slot-type {
+  flex: 0 0 78px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #5d6b73;
+}
+
+.weekend-original {
+  color: #90a0a8;
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.weekend-slot .bench-grid-input {
+  border-color: #e3eaec;
+}
+
+.weekend-add-slot {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+}
+
+.staff-name-list .staff-toggle {
+  cursor: pointer;
+}
+
+@media (max-width: 760px) {
+  .sched-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sched-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .weekend-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Editable bench chips on the staff roster */
+
+.bench-edit-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px dashed transparent;
+  border-radius: 7px;
+  padding: 3px 6px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: #5d6b73;
+}
+
+.bench-edit-button:hover {
+  border-color: #ccd7dc;
+  background: #f4f7f8;
+}
+
+.modal-checkbox-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 14px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 4px 2px;
+}
+
+.modal-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.modal-checkbox input {
+  width: 15px;
+  height: 15px;
+  accent-color: #1d4650;
+}
+
+@media (max-width: 560px) {
+  .modal-checkbox-group {
+    grid-template-columns: 1fr;
   }
 }

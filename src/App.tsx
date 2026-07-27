@@ -11,8 +11,8 @@ import {
   ListChecks,
   Menu,
   Microscope,
+  Pencil,
   Plus,
-  Printer,
   Search,
   Settings,
   ShieldCheck,
@@ -22,21 +22,40 @@ import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 import { benchGuides, type BenchGuideVisibility } from './benchGuides'
 import { benches } from './data'
+import { CHECKBOX_SEPARATOR, FormModal, type FormModalConfig } from './FormModal'
+import { SchedulePage } from './scheduler/SchedulePage'
 import { createAuditEvent, loadDatabase, saveDatabase } from './storage'
+import { getToday } from './today'
 import type {
   AccessRole,
   AuditEvent,
   Bench,
   InstrumentLog,
   LabDatabase,
+  Priority,
   QCEvent,
   Reminder,
   ScheduleAssignment,
+  ShiftType,
   StaffMember,
   Status,
+  TaskCategory,
   TaskItem,
   WorkflowImprovement,
 } from './types'
+
+const shiftTypes: ShiftType[] = ['Day', 'Evening', 'Night', 'Weekend', 'Holiday', 'Off/PTO']
+const taskCategories: TaskCategory[] = [
+  'Daily',
+  'Weekly',
+  'Monthly',
+  'QC',
+  'Maintenance',
+  'Training',
+  'Admin',
+  'Compliance',
+]
+const priorities: Priority[] = ['Low', 'Medium', 'High', 'Critical']
 
 type PageKey =
   | 'Dashboard'
@@ -110,7 +129,7 @@ const staffRoles = [
 ] as const
 
 const redirectStorageKey = 'omc-micro-redirect-path'
-const today = '2026-06-18'
+const today = getToday()
 
 function initialPathname() {
   try {
@@ -132,6 +151,7 @@ function App() {
   const [query, setQuery] = useState('')
   const [accessRole, setAccessRole] = useState<AccessRole>('Admin/Sr Tech')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [activeForm, setActiveForm] = useState<FormModalConfig | null>(null)
 
   useEffect(() => saveDatabase(db), [db])
 
@@ -171,6 +191,10 @@ function App() {
   const currentUser = accessRole === 'Staff' ? 'Wanda Johnson' : accessRole
   const canEdit = accessRole === 'Admin/Sr Tech'
   const canCompletePersonal = accessRole !== 'Read-only'
+
+  function openForm(config: FormModalConfig) {
+    setActiveForm(config)
+  }
 
   function updateDb(
     recipe: (draft: LabDatabase) => void,
@@ -214,21 +238,24 @@ function App() {
       <StaffRoster
         staff={filteredStaff}
         canEdit={canEdit}
-        onAdd={() => addStaff(updateDb, currentUser)}
+        onAdd={() => addStaff(openForm, updateDb, currentUser)}
+        onEditBenches={
+          canEdit
+            ? (person) => editStaffBenches(person, openForm, updateDb, currentUser)
+            : undefined
+        }
+        onEditDetail={
+          canEdit
+            ? (person, key) => editStaffDetail(person, key, openForm, updateDb, currentUser)
+            : undefined
+        }
       />
     ),
     'Bench Guides': <BenchGuides />,
-    Schedule: (
-      <ScheduleBuilder
-        db={db}
-        staffById={staffById}
-        canEdit={canEdit}
-        onAdd={() => addScheduleAssignment(db, updateDb, currentUser)}
-      />
-    ),
+    Schedule: <SchedulePage />,
     Competencies: <CompetencyMatrix db={db} staffById={staffById} />,
     'SOP Tracker': (
-      <SopTracker db={db} canEdit={canEdit} onAdd={() => addSop(updateDb, currentUser)} />
+      <SopTracker db={db} canEdit={canEdit} onAdd={() => addSop(openForm, updateDb, currentUser)} />
     ),
     Tasks: (
       <TasksPage
@@ -236,7 +263,7 @@ function App() {
         canEdit={canEdit}
         canCompletePersonal={canCompletePersonal}
         currentUser={currentUser}
-        onAdd={() => addTask(db, updateDb, currentUser)}
+        onAdd={() => addTask(openForm, db, updateDb, currentUser)}
         onComplete={(task) => completeTask(task, db, updateDb, currentUser, accessRole, canCompletePersonal)}
       />
     ),
@@ -244,28 +271,28 @@ function App() {
       <RemindersPage
         reminders={db.reminders}
         canEdit={canEdit}
-        onAdd={() => addReminder(updateDb, currentUser)}
+        onAdd={() => addReminder(openForm, updateDb, currentUser)}
       />
     ),
     'Instrument Log': (
       <InstrumentLogPage
         logs={db.instrumentLogs}
         canEdit={canEdit}
-        onAdd={() => addInstrumentLog(updateDb, currentUser)}
+        onAdd={() => addInstrumentLog(openForm, updateDb, currentUser)}
       />
     ),
     Workflow: (
       <WorkflowPage
         items={db.workflowImprovements}
         canEdit={canEdit}
-        onAdd={() => addWorkflow(updateDb, currentUser)}
+        onAdd={() => addWorkflow(openForm, updateDb, currentUser)}
       />
     ),
     'QC/Compliance': (
       <QcCompliancePage
         events={db.qcEvents}
         canEdit={canEdit}
-        onAdd={() => addQcEvent(updateDb, currentUser)}
+        onAdd={() => addQcEvent(openForm, db, updateDb, currentUser)}
       />
     ),
     'Audit Trail': <AuditTrail events={db.auditEvents} />,
@@ -389,6 +416,8 @@ function App() {
         </section>
         {content}
       </main>
+
+      {activeForm && <FormModal config={activeForm} onClose={() => setActiveForm(null)} />}
     </div>
   )
 }
@@ -594,7 +623,19 @@ function visibilityLabel(visibility: BenchGuideVisibility) {
   return visibility === 'Public-safe' ? 'Public safe' : 'Private later'
 }
 
-function StaffRoster({ staff, canEdit, onAdd }: { staff: StaffMember[]; canEdit: boolean; onAdd: () => void }) {
+function StaffRoster({
+  staff,
+  canEdit,
+  onAdd,
+  onEditBenches,
+  onEditDetail,
+}: {
+  staff: StaffMember[]
+  canEdit: boolean
+  onAdd: () => void
+  onEditBenches?: (person: StaffMember) => void
+  onEditDetail?: (person: StaffMember, key: StaffDetailKey) => void
+}) {
   const [sortKey, setSortKey] = useState<StaffSortKey>('name')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
 
@@ -656,11 +697,37 @@ function StaffRoster({ staff, canEdit, onAdd }: { staff: StaffMember[]; canEdit:
             {sortedStaff.map((person) => (
               <tr key={person.id}>
                 <td data-label="Name"><strong>{person.name}</strong></td>
-                <td data-label="Title">{displayTitle(person.role)}</td>
+                <td data-label="Title">
+                  <EditableCell onEdit={onEditDetail && (() => onEditDetail(person, 'role'))}>
+                    {displayTitle(person.role)}
+                  </EditableCell>
+                </td>
                 <td data-label="Location">OMC-Micro</td>
-                <td data-label="Status"><Badge tone={person.active ? 'good' : 'neutral'}>{person.active ? 'Active' : 'Inactive'}</Badge></td>
-                <td data-label="Benches"><BenchChips benches={person.benchCompetencies} /></td>
-                <td data-label="Shift Pref">{person.shiftPreference}</td>
+                <td data-label="Status">
+                  <EditableCell onEdit={onEditDetail && (() => onEditDetail(person, 'active'))}>
+                    <Badge tone={person.active ? 'good' : 'neutral'}>{person.active ? 'Active' : 'Inactive'}</Badge>
+                  </EditableCell>
+                </td>
+                <td data-label="Benches">
+                  {onEditBenches ? (
+                    <button
+                      type="button"
+                      className="bench-edit-button"
+                      title="Edit benches"
+                      onClick={() => onEditBenches(person)}
+                    >
+                      <BenchChips benches={person.benchCompetencies} />
+                      <Pencil size={13} aria-hidden="true" />
+                    </button>
+                  ) : (
+                    <BenchChips benches={person.benchCompetencies} />
+                  )}
+                </td>
+                <td data-label="Shift Pref">
+                  <EditableCell onEdit={onEditDetail && (() => onEditDetail(person, 'shiftPreference'))}>
+                    {person.shiftPreference}
+                  </EditableCell>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -672,12 +739,30 @@ function StaffRoster({ staff, canEdit, onAdd }: { staff: StaffMember[]; canEdit:
             <div className="staff-card-head">
               <div>
                 <h3>{person.name}</h3>
-                <p>{displayTitle(person.role)}</p>
+                <EditableCell onEdit={onEditDetail && (() => onEditDetail(person, 'role'))}>
+                  <p>{displayTitle(person.role)}</p>
+                </EditableCell>
               </div>
-              <Badge tone={person.active ? 'good' : 'neutral'}>{person.active ? 'Active' : 'Inactive'}</Badge>
+              <EditableCell onEdit={onEditDetail && (() => onEditDetail(person, 'active'))}>
+                <Badge tone={person.active ? 'good' : 'neutral'}>{person.active ? 'Active' : 'Inactive'}</Badge>
+              </EditableCell>
             </div>
-            <p className="staff-card-meta">{person.shiftPreference} shift / OMC-Micro</p>
-            <BenchChips benches={person.benchCompetencies} />
+            <EditableCell onEdit={onEditDetail && (() => onEditDetail(person, 'shiftPreference'))}>
+              <p className="staff-card-meta">{person.shiftPreference} shift / OMC-Micro</p>
+            </EditableCell>
+            {onEditBenches ? (
+              <button
+                type="button"
+                className="bench-edit-button"
+                title="Edit benches"
+                onClick={() => onEditBenches(person)}
+              >
+                <BenchChips benches={person.benchCompetencies} />
+                <Pencil size={13} aria-hidden="true" />
+              </button>
+            ) : (
+              <BenchChips benches={person.benchCompetencies} />
+            )}
           </article>
         ))}
       </div>
@@ -686,9 +771,25 @@ function StaffRoster({ staff, canEdit, onAdd }: { staff: StaffMember[]; canEdit:
   )
 }
 
+function EditableCell({
+  children,
+  onEdit,
+}: {
+  children: React.ReactNode
+  onEdit?: (() => void) | false
+}) {
+  if (!onEdit) return <>{children}</>
+
+  return (
+    <button type="button" className="bench-edit-button" title="Edit" onClick={onEdit}>
+      {children}
+      <Pencil size={13} aria-hidden="true" />
+    </button>
+  )
+}
+
 function BenchChips({ benches }: { benches: Bench[] }) {
   if (benches.length === 0) return <span className="muted">Not assigned</span>
-
 
   return (
     <div className="bench-chips" title={benches.join(', ')}>
@@ -802,192 +903,6 @@ function titleSortRank(role: StaffMember['role']) {
   }
 
   return titleOrder[role]
-}
-
-const monthNames = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-]
-
-const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-
-function initialScheduleMonth() {
-  const current = toLocalDate(today)
-  return current.getFullYear() === 2026 ? current.getMonth() : 0
-}
-
-function toLocalDate(value: string) {
-  return new Date(`${value}T00:00:00`)
-}
-
-function dateKey(date: Date) {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-function addDays(date: Date, days: number) {
-  const next = new Date(date)
-  next.setDate(next.getDate() + days)
-  return next
-}
-
-function startOfWeek(date: Date) {
-  return addDays(date, -date.getDay())
-}
-
-function getWeekDays(weekStart: string) {
-  const start = startOfWeek(toLocalDate(weekStart))
-  return Array.from({ length: 7 }, (_, index) => {
-    const date = addDays(start, index)
-    return { date, key: dateKey(date), inMonth: true }
-  })
-}
-
-function getMonthCalendarDays(year: number, month: number) {
-  const firstDay = new Date(year, month, 1)
-  const lastDay = new Date(year, month + 1, 0)
-  const calendarStart = startOfWeek(firstDay)
-  const calendarEnd = addDays(lastDay, 6 - lastDay.getDay())
-  const days: { date: Date; key: string; inMonth: boolean }[] = []
-
-  for (let date = calendarStart; date <= calendarEnd; date = addDays(date, 1)) {
-    days.push({ date, key: dateKey(date), inMonth: date.getMonth() === month })
-  }
-
-  return days
-}
-
-function groupAssignmentsByDate(assignments: ScheduleAssignment[]) {
-  return assignments.reduce<Record<string, ScheduleAssignment[]>>((grouped, assignment) => {
-    grouped[assignment.date] = [...(grouped[assignment.date] ?? []), assignment]
-    return grouped
-  }, {})
-}
-
-function ScheduleBuilder({
-  db,
-  staffById,
-  canEdit,
-  onAdd,
-}: {
-  db: LabDatabase
-  staffById: Record<string, StaffMember>
-  canEdit: boolean
-  onAdd: () => void
-}) {
-  const [view, setView] = useState<'Week' | 'Month'>('Week')
-  const [selectedMonth, setSelectedMonth] = useState(() => initialScheduleMonth())
-  const [weekStart, setWeekStart] = useState(() => dateKey(startOfWeek(toLocalDate(today))))
-  const assignmentsByDate = useMemo(
-    () => groupAssignmentsByDate(db.scheduleAssignments),
-    [db.scheduleAssignments],
-  )
-  const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart])
-  const monthDays = useMemo(() => getMonthCalendarDays(2026, selectedMonth), [selectedMonth])
-  const monthLabel = monthNames[selectedMonth]
-
-  return (
-    <div className="stack">
-      <div className="toolbar">
-        <div className="segmented">
-          <button className={view === 'Week' ? 'selected' : ''} onClick={() => setView('Week')}>Week</button>
-          <button className={view === 'Month' ? 'selected' : ''} onClick={() => setView('Month')}>Month</button>
-        </div>
-        {view === 'Week' && (
-          <label className="schedule-picker">
-            <span>Week of</span>
-            <input
-              type="date"
-              value={weekStart}
-              onChange={(event) => setWeekStart(dateKey(startOfWeek(toLocalDate(event.target.value))))}
-            />
-          </label>
-        )}
-        {view === 'Month' && (
-          <label className="schedule-picker">
-            <span>2026 month</span>
-            <select value={selectedMonth} onChange={(event) => setSelectedMonth(Number(event.target.value))}>
-              {monthNames.map((month, index) => (
-                <option value={index} key={month}>{month}</option>
-              ))}
-            </select>
-          </label>
-        )}
-        <button className="secondary" onClick={() => window.print()}><Printer size={16} /> Print/export</button>
-        {canEdit && <button className="primary" onClick={onAdd}><Plus size={16} /> Add assignment</button>}
-      </div>
-
-      <Panel title={view === 'Week' ? 'Weekly Schedule - Sunday to Saturday' : `${monthLabel} 2026 Monthly Schedule`}>
-        <div className={`schedule-calendar print-area ${view === 'Week' ? 'week-calendar' : ''}`}>
-          <div className="calendar-weekdays">
-            {weekdayNames.map((day) => <span key={day}>{day}</span>)}
-          </div>
-          <div className="calendar-grid">
-            {(view === 'Week' ? weekDays : monthDays).map((day) => (
-              <ScheduleDay
-                assignments={assignmentsByDate[day.key] ?? []}
-                currentMonth={selectedMonth}
-                date={day.date}
-                inMonth={view === 'Week' || day.inMonth}
-                key={day.key}
-                staffById={staffById}
-              />
-            ))}
-          </div>
-        </div>
-      </Panel>
-    </div>
-  )
-}
-
-function ScheduleDay({
-  assignments,
-  currentMonth,
-  date,
-  inMonth,
-  staffById,
-}: {
-  assignments: ScheduleAssignment[]
-  currentMonth: number
-  date: Date
-  inMonth: boolean
-  staffById: Record<string, StaffMember>
-}) {
-  return (
-    <article className={`calendar-day ${inMonth ? '' : 'outside-month'}`}>
-      <div className="calendar-date-head">
-        <div>
-          <strong>{date.getDate()}</strong>
-          <span>{weekdayNames[date.getDay()]}</span>
-        </div>
-        {date.getMonth() !== currentMonth && <small>{monthNames[date.getMonth()].slice(0, 3)}</small>}
-      </div>
-      <div className="calendar-assignments">
-        {assignments.length === 0 && <span className="empty-day">No assignment</span>}
-        {assignments.map((assignment) => (
-          <div className="calendar-assignment" key={assignment.id}>
-            <div>
-              <strong>{staffById[assignment.staffId]?.name ?? 'Unassigned'}</strong>
-              <span>{shortBenchName(assignment.bench)}</span>
-            </div>
-            <Badge tone={assignment.shift === 'Off/PTO' ? 'neutral' : 'info'}>{assignment.shift}</Badge>
-          </div>
-        ))}
-      </div>
-    </article>
-  )
 }
 
 function CompetencyMatrix({ db, staffById }: { db: LabDatabase; staffById: Record<string, StaffMember> }) {
@@ -1328,185 +1243,361 @@ function EmptyState({ text }: { text: string }) {
   return <p className="empty-state">{text}</p>
 }
 
-function addStaff(updateDb: (recipe: (draft: LabDatabase) => void, audit: Omit<AuditEvent, 'id' | 'dateTime'>) => void, user: string) {
-  const name = window.prompt('Staff name')
-  if (!name) return
-  const role = window.prompt('Role/title', 'Medical Technologist')
-  const id = `STF-${Date.now().toString().slice(-4)}`
-  updateDb(
-    (draft) => {
-      draft.staff.push({
-        id,
-        name,
-        role: staffRoles.includes(role as never) ? (role as StaffMember['role']) : 'Medical Technologist',
-        primaryLocation: 'Main Microbiology Lab',
-        employmentStatus: 'Full-time',
-        benchCompetencies: [],
-        shiftPreference: 'Day',
-        notes: 'New placeholder staff record.',
-        active: true,
-      })
+type UpdateDb = (
+  recipe: (draft: LabDatabase) => void,
+  audit: Omit<AuditEvent, 'id' | 'dateTime'>,
+) => void
+
+type OpenForm = (config: FormModalConfig) => void
+
+function addStaff(openForm: OpenForm, updateDb: UpdateDb, user: string) {
+  openForm({
+    title: 'Add staff',
+    description: 'Create a placeholder staff record. No PHI.',
+    submitLabel: 'Add staff',
+    fields: [
+      { name: 'name', label: 'Name', type: 'text', required: true, placeholder: 'First Last' },
+      { name: 'role', label: 'Role/title', type: 'select', options: staffRoles, defaultValue: 'Medical Technologist' },
+      { name: 'shiftPreference', label: 'Shift preference', type: 'select', options: shiftTypes, defaultValue: 'Day' },
+      { name: 'notes', label: 'Notes', type: 'textarea', placeholder: 'Optional' },
+    ],
+    onSubmit: (values) => {
+      const id = `STF-${Date.now().toString().slice(-4)}`
+      updateDb(
+        (draft) => {
+          draft.staff.push({
+            id,
+            name: values.name,
+            role: staffRoles.includes(values.role as never)
+              ? (values.role as StaffMember['role'])
+              : 'Medical Technologist',
+            primaryLocation: 'Ochsner Medical Center - Microbiology',
+            employmentStatus: 'Full-time',
+            benchCompetencies: [],
+            shiftPreference: values.shiftPreference || 'Day',
+            notes: values.notes || 'New staff record.',
+            active: true,
+          })
+        },
+        { action: 'Created', itemType: 'Staff', itemId: id, user, summary: `Added staff record for ${values.name}.` },
+      )
     },
-    { action: 'Created', itemType: 'Staff', itemId: id, user, summary: `Added staff record for ${name}.` },
-  )
+  })
 }
 
-function addScheduleAssignment(
-  db: LabDatabase,
-  updateDb: (recipe: (draft: LabDatabase) => void, audit: Omit<AuditEvent, 'id' | 'dateTime'>) => void,
+type StaffDetailKey = 'role' | 'active' | 'shiftPreference'
+
+function editStaffDetail(
+  person: StaffMember,
+  key: StaffDetailKey,
+  openForm: OpenForm,
+  updateDb: UpdateDb,
   user: string,
 ) {
-  const staff = db.staff.find((person) => person.active)
-  if (!staff) return
-  const bench = (window.prompt('Bench/area', 'Bench 3 - Urine Cultures') || 'Bench 3 - Urine Cultures') as Bench
-  const id = `SCH-${Date.now()}`
-  updateDb(
-    (draft) => {
-      draft.scheduleAssignments.push({
-        id,
-        staffId: staff.id,
-        date: today,
-        shift: 'Day',
-        bench: benches.includes(bench) ? bench : 'Bench 3 - Urine Cultures',
-        notes: 'Added from quick form.',
-      })
+  const configs: Record<
+    StaffDetailKey,
+    { title: string; label: string; options: readonly string[]; current: string }
+  > = {
+    role: {
+      title: `Title - ${person.name}`,
+      label: 'Title',
+      options: staffRoles,
+      current: person.role,
     },
-    { action: 'Created', itemType: 'ScheduleAssignment', itemId: id, user, summary: `Added ${staff.name} to ${bench}.` },
-  )
+    active: {
+      title: `Status - ${person.name}`,
+      label: 'Status',
+      options: ['Active', 'Inactive'],
+      current: person.active ? 'Active' : 'Inactive',
+    },
+    shiftPreference: {
+      title: `Shift preference - ${person.name}`,
+      label: 'Shift preference',
+      options: shiftTypes,
+      current: person.shiftPreference,
+    },
+  }
+  const config = configs[key]
+
+  openForm({
+    title: config.title,
+    submitLabel: 'Save',
+    fields: [
+      {
+        name: 'value',
+        label: config.label,
+        type: 'select',
+        options: config.options,
+        defaultValue: config.current,
+      },
+    ],
+    onSubmit: (values) => {
+      if (values.value === config.current) return
+      updateDb(
+        (draft) => {
+          const target = draft.staff.find((member) => member.id === person.id)
+          if (!target) return
+          if (key === 'role') target.role = values.value as StaffMember['role']
+          if (key === 'active') target.active = values.value === 'Active'
+          if (key === 'shiftPreference') target.shiftPreference = values.value
+        },
+        {
+          action: 'Updated',
+          itemType: 'Staff',
+          itemId: person.id,
+          user,
+          summary: `Set ${config.label.toLowerCase()} for ${person.name} to ${values.value}.`,
+        },
+      )
+    },
+  })
 }
 
-function addSop(updateDb: (recipe: (draft: LabDatabase) => void, audit: Omit<AuditEvent, 'id' | 'dateTime'>) => void, user: string) {
-  const title = window.prompt('SOP title')
-  if (!title) return
-  const id = `SOP-MIC-${Date.now().toString().slice(-3)}`
-  updateDb(
-    (draft) => {
-      draft.sops.push({
-        id,
-        title,
-        section: 'Bench 2 - Aerobic Cultures',
-        version: '0.1',
-        effectiveDate: today,
-        reviewDueDate: '2027-06-18',
-        owner: user,
-        status: 'Draft',
-        changeSummary: 'Initial draft placeholder.',
-        attachment: 'Link placeholder',
-      })
-    },
-    { action: 'Created', itemType: 'SOP', itemId: id, user, summary: `Created draft SOP ${title}.` },
-  )
-}
-
-function addTask(
-  db: LabDatabase,
-  updateDb: (recipe: (draft: LabDatabase) => void, audit: Omit<AuditEvent, 'id' | 'dateTime'>) => void,
+function editStaffBenches(
+  person: StaffMember,
+  openForm: OpenForm,
+  updateDb: UpdateDb,
   user: string,
 ) {
-  const title = window.prompt('Task title')
-  if (!title) return
-  const assignee = db.staff[0]
-  const id = `TSK-${Date.now()}`
-  updateDb(
-    (draft) => {
-      draft.tasks.push({
-        id,
-        title,
-        category: 'Admin',
-        assignedTo: assignee.id,
-        dueDate: today,
-        priority: 'Medium',
-        status: 'Open',
-        completionDate: '',
-        notes: 'Added from quick form.',
-      })
+  openForm({
+    title: `Benches - ${person.name}`,
+    description: 'Check every bench this tech can cover. This drives the Benches column and the competency picture.',
+    submitLabel: 'Save benches',
+    fields: [
+      {
+        name: 'benches',
+        label: 'Benches',
+        type: 'checkboxes',
+        options: benches,
+        defaultValue: person.benchCompetencies.join(CHECKBOX_SEPARATOR),
+      },
+    ],
+    onSubmit: (values) => {
+      const selected = values.benches
+        ? (values.benches.split(CHECKBOX_SEPARATOR) as Bench[])
+        : []
+      updateDb(
+        (draft) => {
+          const target = draft.staff.find((member) => member.id === person.id)
+          if (target) target.benchCompetencies = selected
+        },
+        {
+          action: 'Updated',
+          itemType: 'Staff',
+          itemId: person.id,
+          user,
+          summary: `Set benches for ${person.name}: ${selected.length ? selected.map(shortBenchName).join(', ') : 'none'}.`,
+        },
+      )
     },
-    { action: 'Created', itemType: 'Task', itemId: id, user, summary: `Created task ${title}.` },
-  )
+  })
 }
 
-function addReminder(updateDb: (recipe: (draft: LabDatabase) => void, audit: Omit<AuditEvent, 'id' | 'dateTime'>) => void, user: string) {
-  const title = window.prompt('Reminder title')
-  if (!title) return
-  const id = `REM-${Date.now()}`
-  updateDb(
-    (draft) => {
-      draft.reminders.push({ id, title, type: 'Staff meeting', dueDate: today, owner: user, status: 'Open' })
+function addSop(openForm: OpenForm, updateDb: UpdateDb, user: string) {
+  openForm({
+    title: 'Add SOP',
+    submitLabel: 'Create SOP',
+    fields: [
+      { name: 'title', label: 'SOP title', type: 'text', required: true },
+      { name: 'section', label: 'Section/bench', type: 'select', options: benches, defaultValue: 'Bench 2 - Aerobic Cultures' },
+      { name: 'version', label: 'Version', type: 'text', defaultValue: '0.1' },
+      { name: 'effectiveDate', label: 'Effective date', type: 'date', defaultValue: today },
+      { name: 'reviewDueDate', label: 'Review due date', type: 'date', required: true },
+      { name: 'changeSummary', label: 'Change summary', type: 'textarea', placeholder: 'What changed in this version' },
+    ],
+    onSubmit: (values) => {
+      const id = `SOP-MIC-${Date.now().toString().slice(-3)}`
+      updateDb(
+        (draft) => {
+          draft.sops.push({
+            id,
+            title: values.title,
+            section: values.section,
+            version: values.version || '0.1',
+            effectiveDate: values.effectiveDate || today,
+            reviewDueDate: values.reviewDueDate,
+            owner: user,
+            status: 'Draft',
+            changeSummary: values.changeSummary || 'Initial draft.',
+            attachment: 'Link placeholder',
+          })
+        },
+        { action: 'Created', itemType: 'SOP', itemId: id, user, summary: `Created draft SOP ${values.title}.` },
+      )
     },
-    { action: 'Created', itemType: 'Reminder', itemId: id, user, summary: `Created reminder ${title}.` },
-  )
+  })
 }
 
-function addInstrumentLog(updateDb: (recipe: (draft: LabDatabase) => void, audit: Omit<AuditEvent, 'id' | 'dateTime'>) => void, user: string) {
-  const issue = window.prompt('Issue/error code')
-  if (!issue) return
-  const id = `INS-${Date.now()}`
-  updateDb(
-    (draft) => {
-      draft.instrumentLogs.push({
-        id,
-        instrument: 'Instrument placeholder',
-        dateTime: new Date().toISOString(),
-        issue,
-        section: 'Bench 2 - Aerobic Cultures',
-        troubleshooting: 'Check, verify, execute, document workflow started.',
-        workflowStep: 'Check',
-        downtime: 'Pending',
-        vendorContacted: false,
-        ticketNumber: 'Pending',
-        resolution: 'Pending',
-        followUpNeeded: 'Pending review.',
-        documentedBy: user,
-      })
+function addTask(openForm: OpenForm, db: LabDatabase, updateDb: UpdateDb, user: string) {
+  const staffOptions = db.staff.map((person) => person.name)
+
+  openForm({
+    title: 'Add task',
+    submitLabel: 'Create task',
+    fields: [
+      { name: 'title', label: 'Task title', type: 'text', required: true },
+      { name: 'category', label: 'Category', type: 'select', options: taskCategories, defaultValue: 'Admin' },
+      { name: 'assignedTo', label: 'Assigned to', type: 'select', options: staffOptions, required: true },
+      { name: 'dueDate', label: 'Due date', type: 'date', required: true, defaultValue: today },
+      { name: 'priority', label: 'Priority', type: 'select', options: priorities, defaultValue: 'Medium' },
+      { name: 'notes', label: 'Notes', type: 'textarea', placeholder: 'Optional' },
+    ],
+    onSubmit: (values) => {
+      const assignee = db.staff.find((person) => person.name === values.assignedTo) ?? db.staff[0]
+      const id = `TSK-${Date.now()}`
+      updateDb(
+        (draft) => {
+          draft.tasks.push({
+            id,
+            title: values.title,
+            category: values.category as TaskItem['category'],
+            assignedTo: assignee.id,
+            dueDate: values.dueDate || today,
+            priority: values.priority as TaskItem['priority'],
+            status: 'Open',
+            completionDate: '',
+            notes: values.notes,
+          })
+        },
+        { action: 'Created', itemType: 'Task', itemId: id, user, summary: `Created task ${values.title}.` },
+      )
     },
-    { action: 'Created', itemType: 'InstrumentLog', itemId: id, user, summary: `Logged instrument issue ${issue}.` },
-  )
+  })
 }
 
-function addWorkflow(updateDb: (recipe: (draft: LabDatabase) => void, audit: Omit<AuditEvent, 'id' | 'dateTime'>) => void, user: string) {
-  const problem = window.prompt('Current workflow/problem')
-  if (!problem) return
-  const id = `WFI-${Date.now()}`
-  updateDb(
-    (draft) => {
-      draft.workflowImprovements.push({
-        id,
-        problem,
-        proposedImprovement: 'Improvement proposal placeholder.',
-        priority: 'Medium',
-        owner: user,
-        targetDate: today,
-        status: 'Proposed',
-        outcome: 'Pending',
-        followUpNotes: 'Needs review.',
-      })
+function addReminder(openForm: OpenForm, updateDb: UpdateDb, user: string) {
+  openForm({
+    title: 'Add reminder',
+    submitLabel: 'Create reminder',
+    fields: [
+      { name: 'title', label: 'Reminder title', type: 'text', required: true },
+      {
+        name: 'type',
+        label: 'Type',
+        type: 'select',
+        options: ['QC due', 'Preventive maintenance', 'Reagent', 'Training', 'CAP/CLIA readiness', 'Staff meeting'],
+        defaultValue: 'QC due',
+      },
+      { name: 'dueDate', label: 'Due date', type: 'date', required: true, defaultValue: today },
+    ],
+    onSubmit: (values) => {
+      const id = `REM-${Date.now()}`
+      updateDb(
+        (draft) => {
+          draft.reminders.push({ id, title: values.title, type: values.type, dueDate: values.dueDate || today, owner: user, status: 'Open' })
+        },
+        { action: 'Created', itemType: 'Reminder', itemId: id, user, summary: `Created reminder ${values.title}.` },
+      )
     },
-    { action: 'Created', itemType: 'WorkflowImprovement', itemId: id, user, summary: `Created workflow item ${problem}.` },
-  )
+  })
 }
 
-function addQcEvent(updateDb: (recipe: (draft: LabDatabase) => void, audit: Omit<AuditEvent, 'id' | 'dateTime'>) => void, user: string) {
-  const eventType = window.prompt('QC event type')
-  if (!eventType) return
-  const id = `QC-${Date.now()}`
-  updateDb(
-    (draft) => {
-      draft.qcEvents.push({
-        id,
-        eventType,
-        section: 'Inventory',
-        date: today,
-        description: 'QC/compliance placeholder event.',
-        correctiveAction: 'Corrective action pending.',
-        responsibleStaff: user,
-        reviewStatus: 'Open',
-        notification: 'Notification field pending.',
-        completionDate: '',
-        supportingDocument: 'Document placeholder',
-      })
+function addInstrumentLog(openForm: OpenForm, updateDb: UpdateDb, user: string) {
+  openForm({
+    title: 'Add instrument/error log',
+    description: 'Document the issue. Use the Check / Verify / Execute / Document workflow. No PHI.',
+    submitLabel: 'Log issue',
+    fields: [
+      { name: 'instrument', label: 'Instrument', type: 'text', required: true, placeholder: 'e.g. Molecular Analyzer A' },
+      { name: 'issue', label: 'Issue/error code', type: 'text', required: true },
+      { name: 'section', label: 'Section/bench', type: 'select', options: benches, defaultValue: 'Bench 2 - Aerobic Cultures' },
+      { name: 'troubleshooting', label: 'Troubleshooting', type: 'textarea', placeholder: 'Steps taken so far' },
+    ],
+    onSubmit: (values) => {
+      const id = `INS-${Date.now()}`
+      updateDb(
+        (draft) => {
+          draft.instrumentLogs.push({
+            id,
+            instrument: values.instrument,
+            dateTime: new Date().toISOString(),
+            issue: values.issue,
+            section: values.section as Bench,
+            troubleshooting: values.troubleshooting || 'Check, verify, execute, document workflow started.',
+            workflowStep: 'Check',
+            downtime: 'Pending',
+            vendorContacted: false,
+            ticketNumber: 'Pending',
+            resolution: 'Pending',
+            followUpNeeded: 'Pending review.',
+            documentedBy: user,
+          })
+        },
+        { action: 'Created', itemType: 'InstrumentLog', itemId: id, user, summary: `Logged instrument issue ${values.issue}.` },
+      )
     },
-    { action: 'Created', itemType: 'QCEvent', itemId: id, user, summary: `Created QC event ${eventType}.` },
-  )
+  })
+}
+
+function addWorkflow(openForm: OpenForm, updateDb: UpdateDb, user: string) {
+  openForm({
+    title: 'Add workflow improvement',
+    submitLabel: 'Create improvement',
+    fields: [
+      { name: 'problem', label: 'Current workflow/problem', type: 'textarea', required: true },
+      { name: 'proposedImprovement', label: 'Proposed improvement', type: 'textarea', placeholder: 'Optional' },
+      { name: 'priority', label: 'Priority', type: 'select', options: priorities, defaultValue: 'Medium' },
+      { name: 'targetDate', label: 'Target date', type: 'date', defaultValue: today },
+    ],
+    onSubmit: (values) => {
+      const id = `WFI-${Date.now()}`
+      updateDb(
+        (draft) => {
+          draft.workflowImprovements.push({
+            id,
+            problem: values.problem,
+            proposedImprovement: values.proposedImprovement || 'Proposal pending.',
+            priority: values.priority as WorkflowImprovement['priority'],
+            owner: user,
+            targetDate: values.targetDate || today,
+            status: 'Proposed',
+            outcome: 'Pending',
+            followUpNotes: 'Needs review.',
+          })
+        },
+        { action: 'Created', itemType: 'WorkflowImprovement', itemId: id, user, summary: `Created workflow item ${values.problem}.` },
+      )
+    },
+  })
+}
+
+function addQcEvent(openForm: OpenForm, db: LabDatabase, updateDb: UpdateDb, user: string) {
+  const staffOptions = db.staff.map((person) => person.name)
+
+  openForm({
+    title: 'Add QC/compliance event',
+    description: 'Use operational event language only. No PHI, MRNs, or accession numbers.',
+    submitLabel: 'Create event',
+    fields: [
+      { name: 'eventType', label: 'Event type', type: 'text', required: true, placeholder: 'e.g. Temperature excursion' },
+      { name: 'section', label: 'Section/bench', type: 'select', options: benches, defaultValue: 'Inventory' },
+      { name: 'date', label: 'Date identified', type: 'date', required: true, defaultValue: today },
+      { name: 'description', label: 'Description', type: 'textarea', placeholder: 'Operational details only' },
+      { name: 'correctiveAction', label: 'Corrective action', type: 'textarea', placeholder: 'Optional' },
+      { name: 'responsibleStaff', label: 'Responsible staff', type: 'select', options: staffOptions },
+    ],
+    onSubmit: (values) => {
+      const id = `QC-${Date.now()}`
+      updateDb(
+        (draft) => {
+          draft.qcEvents.push({
+            id,
+            eventType: values.eventType,
+            section: values.section as Bench,
+            date: values.date || today,
+            description: values.description || 'Event documented.',
+            correctiveAction: values.correctiveAction || 'Corrective action pending.',
+            responsibleStaff: values.responsibleStaff || user,
+            reviewStatus: 'Open',
+            notification: 'Notification field pending.',
+            completionDate: '',
+            supportingDocument: 'Document placeholder',
+          })
+        },
+        { action: 'Created', itemType: 'QCEvent', itemId: id, user, summary: `Created QC event ${values.eventType}.` },
+      )
+    },
+  })
 }
 
 function completeTask(
