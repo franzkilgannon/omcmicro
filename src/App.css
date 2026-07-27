@@ -5,7 +5,7 @@
   grid-template-columns: 280px minmax(0, 1fr);
   background: #f5f7f8;
   color: #172026;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .mobile-header,
