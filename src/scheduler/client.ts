@@ -169,3 +169,9 @@ export function reportSaveError(error: { message: string } | null) {
   if (error) window.alert(`Save failed: ${error.message}`)
   return Boolean(error)
 }
+
+export function parseOffTag(note: string): 'GPT' | 'HOP' | null {
+  if (note === 'GPT' || note.startsWith('GPT - ')) return 'GPT'
+  if (note === 'HOP' || note.startsWith('HOP - ')) return 'HOP'
+  return null
+}

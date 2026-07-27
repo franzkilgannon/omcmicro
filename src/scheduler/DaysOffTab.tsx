@@ -1,7 +1,14 @@
 import { ChevronLeft, ChevronRight, Plus, RotateCcw, X } from 'lucide-react'
 import { useState } from 'react'
 import { getToday } from '../today'
-import { logSchedAudit, reportSaveError, supabase, type DayNoteRow, type DayOffRow } from './client'
+import {
+  logSchedAudit,
+  parseOffTag,
+  reportSaveError,
+  supabase,
+  type DayNoteRow,
+  type DayOffRow,
+} from './client'
 import { formatLong, monthGrid, monthNames, toLocalDate, weekdayNames } from './dates'
 import type { TabProps } from './SchedulePage'
 
@@ -33,13 +40,13 @@ export function DaysOffTab({ data, email, reload, openForm, staffNames }: TabPro
     openForm({
       title: `Add to ${formatLong(dayKey)}`,
       description:
-        'A day off puts a name on the calendar (like writing it on the wall). A day note is free text, e.g. "Amany here" or visitor hours.',
+        'A day off puts a name on the calendar (like writing it on the wall). GPT (General Purpose Time) and HOP (Holiday/Personal day) work the same way, tagged with the reason.',
       submitLabel: 'Add',
       fields: [
-        { name: 'kind', label: 'Type', type: 'select', options: ['Day off', 'Day note'] },
+        { name: 'kind', label: 'Type', type: 'select', options: ['Day off', 'GPT', 'HOP'] },
         {
           name: 'name',
-          label: 'Name (for day off)',
+          label: 'Name',
           type: 'datalist',
           options: staffNames,
           placeholder: 'Start typing a name',
@@ -48,37 +55,35 @@ export function DaysOffTab({ data, email, reload, openForm, staffNames }: TabPro
           name: 'note',
           label: 'Note',
           type: 'text',
-          placeholder: 'Optional for a day off - required for a day note',
+          placeholder: 'Optional details',
         },
       ],
       onSubmit: async (values) => {
-        if (values.kind === 'Day off') {
-          if (!values.name) return
-          const alreadyOff = (offByDate.get(dayKey) ?? []).some(
-            (entry) =>
-              !entry.removed_at &&
-              entry.staff_name.toLowerCase() === values.name.toLowerCase(),
-          )
-          if (alreadyOff) {
-            window.alert(`${values.name} is already marked off on ${formatLong(dayKey)}.`)
-            return
-          }
-          const { error } = await supabase.from('sched_days_off').insert({
-            off_date: dayKey,
-            staff_name: values.name,
-            note: values.note || '',
-            created_by: email,
-          })
-          if (reportSaveError(error)) return
-          await logSchedAudit('Added', 'Day off', `${values.name} off on ${dayKey}`, email)
-        } else {
-          if (!values.note) return
-          const { error } = await supabase
-            .from('sched_day_notes')
-            .insert({ note_date: dayKey, note: values.note, created_by: email })
-          if (reportSaveError(error)) return
-          await logSchedAudit('Added', 'Day note', `${dayKey}: ${values.note}`, email)
+        if (!values.name) return
+        const alreadyOff = (offByDate.get(dayKey) ?? []).some(
+          (entry) =>
+            !entry.removed_at &&
+            entry.staff_name.toLowerCase() === values.name.toLowerCase(),
+        )
+        if (alreadyOff) {
+          window.alert(`${values.name} is already marked off on ${formatLong(dayKey)}.`)
+          return
         }
+        const tag = values.kind === 'Day off' ? '' : values.kind
+        const note = tag ? (values.note ? `${tag} - ${values.note}` : tag) : values.note || ''
+        const { error } = await supabase.from('sched_days_off').insert({
+          off_date: dayKey,
+          staff_name: values.name,
+          note,
+          created_by: email,
+        })
+        if (reportSaveError(error)) return
+        await logSchedAudit(
+          'Added',
+          tag || 'Day off',
+          `${values.name} ${tag || 'off'} on ${dayKey}`,
+          email,
+        )
         reload()
       },
     })
@@ -177,14 +182,16 @@ export function DaysOffTab({ data, email, reload, openForm, staffNames }: TabPro
                   </button>
                 </div>
                 <div className="dayoff-chip-row">
-                  {entries.map((entry) =>
-                    entry.removed_at ? (
+                  {entries.map((entry) => {
+                    const tag = parseOffTag(entry.note)
+                    return entry.removed_at ? (
                       <span
                         className="dayoff-chip struck"
                         key={entry.id}
                         title={`Crossed out by ${entry.removed_by}`}
                       >
                         {entry.staff_name}
+                        {tag && <span className="dayoff-chip-tag">{tag}</span>}
                         <button
                           className="chip-action"
                           title="Restore"
@@ -200,6 +207,7 @@ export function DaysOffTab({ data, email, reload, openForm, staffNames }: TabPro
                         title={entry.note ? `${entry.note} (added by ${entry.created_by})` : `Added by ${entry.created_by}`}
                       >
                         {entry.staff_name}
+                        {tag && <span className="dayoff-chip-tag">{tag}</span>}
                         <button
                           className="chip-action"
                           title="Cross out"
@@ -208,8 +216,8 @@ export function DaysOffTab({ data, email, reload, openForm, staffNames }: TabPro
                           <X size={11} />
                         </button>
                       </span>
-                    ),
-                  )}
+                    )
+                  })}
                 </div>
                 {notes.map((note) => (
                   <p

@@ -5,7 +5,13 @@ import { FormModal, type FormModalConfig } from '../FormModal'
 import { getToday } from '../today'
 import { AccessHistoryTab } from './AccessHistoryTab'
 import { BenchGridTab } from './BenchGridTab'
-import { AUTH_ENABLED, loadSchedulerData, supabase, type SchedulerData } from './client'
+import {
+  AUTH_ENABLED,
+  loadSchedulerData,
+  parseOffTag,
+  supabase,
+  type SchedulerData,
+} from './client'
 import { dateKey, formatLong, mondayOf, saturdayOf, toLocalDate } from './dates'
 import { DaysOffTab } from './DaysOffTab'
 import { WeekendTab } from './WeekendTab'
@@ -250,13 +256,13 @@ function TodayStrip({ data }: { data: SchedulerData }) {
   const weekKey = dateKey(mondayOf(todayDate))
   const isWeekend = todayDate.getDay() === 0 || todayDate.getDay() === 6
 
-  const offToday = [
-    ...new Set(
-      data.daysOff
-        .filter((entry) => entry.off_date === todayKey && !entry.removed_at)
-        .map((entry) => entry.staff_name),
-    ),
-  ]
+  const offEntriesToday = data.daysOff.filter(
+    (entry) => entry.off_date === todayKey && !entry.removed_at,
+  )
+  const offToday = [...new Set(offEntriesToday.map((entry) => entry.staff_name))]
+  const offTagByName = new Map(
+    offEntriesToday.map((entry) => [entry.staff_name, parseOffTag(entry.note)]),
+  )
   const notesToday = data.dayNotes.filter((note) => note.note_date === todayKey)
 
   const overridesToday = new Map(
@@ -313,6 +319,9 @@ function TodayStrip({ data }: { data: SchedulerData }) {
             {offToday.map((name) => (
               <span className="dayoff-chip" key={name}>
                 {name}
+                {offTagByName.get(name) && (
+                  <span className="dayoff-chip-tag">{offTagByName.get(name)}</span>
+                )}
               </span>
             ))}
           </div>

@@ -1664,6 +1664,16 @@ small {
   background: #f2f4f5;
 }
 
+.dayoff-chip-tag {
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #1d4650;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
 .chip-action {
   display: inline-flex;
   align-items: center;
