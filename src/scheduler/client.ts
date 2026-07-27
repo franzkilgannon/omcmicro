@@ -175,3 +175,48 @@ export function parseOffTag(note: string): 'GPT' | 'HOP' | null {
   if (note === 'HOP' || note.startsWith('HOP - ')) return 'HOP'
   return null
 }
+
+// Write-through sync: keeps the Scheduler's staff name picker (sched_staff)
+// lined up with the Staff Roster, which is the primary place staff get
+// added/renamed. Best-effort - swallows errors so a Supabase hiccup never
+// blocks a Staff Roster edit; use syncRosterToScheduler to catch up by hand.
+export async function upsertSchedStaffByName(name: string, active: boolean) {
+  try {
+    const { data: existing } = await supabase
+      .from('sched_staff')
+      .select('id')
+      .ilike('name', name)
+      .maybeSingle()
+    if (existing) {
+      await supabase.from('sched_staff').update({ active }).eq('id', existing.id)
+    } else {
+      await supabase.from('sched_staff').insert({ name, active })
+    }
+  } catch {
+    // best-effort sync
+  }
+}
+
+export async function renameSchedStaff(oldName: string, newName: string) {
+  try {
+    const { data: existing } = await supabase
+      .from('sched_staff')
+      .select('id')
+      .ilike('name', oldName)
+      .maybeSingle()
+    if (existing) {
+      await supabase.from('sched_staff').update({ name: newName }).eq('id', existing.id)
+    } else {
+      await supabase.from('sched_staff').insert({ name: newName, active: true })
+    }
+  } catch {
+    // best-effort sync
+  }
+}
+
+/** One-time (or as-needed) catch-up: pushes every roster name's active state to sched_staff. */
+export async function syncRosterToScheduler(roster: { name: string; active: boolean }[]) {
+  for (const person of roster) {
+    await upsertSchedStaffByName(person.name, person.active)
+  }
+}

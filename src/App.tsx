@@ -23,6 +23,11 @@ import './App.css'
 import { benchGuides, type BenchGuideVisibility } from './benchGuides'
 import { benches } from './data'
 import { CHECKBOX_SEPARATOR, FormModal, type FormModalConfig } from './FormModal'
+import {
+  renameSchedStaff,
+  syncRosterToScheduler,
+  upsertSchedStaffByName,
+} from './scheduler/client'
 import { SchedulePage } from './scheduler/SchedulePage'
 import { createAuditEvent, loadDatabase, saveDatabase } from './storage'
 import { getToday } from './today'
@@ -245,6 +250,15 @@ function App() {
         onEditDetail={
           canEdit
             ? (person, key) => editStaffDetail(person, key, openForm, updateDb, currentUser)
+            : undefined
+        }
+        onSyncToScheduler={
+          canEdit
+            ? () => {
+                void syncRosterToScheduler(
+                  db.staff.map((person) => ({ name: person.name, active: person.active })),
+                ).then(() => window.alert('Staff names synced to the Scheduler.'))
+              }
             : undefined
         }
       />
@@ -645,12 +659,14 @@ function StaffRoster({
   onAdd,
   onEditBenches,
   onEditDetail,
+  onSyncToScheduler,
 }: {
   staff: StaffMember[]
   canEdit: boolean
   onAdd: () => void
   onEditBenches?: (person: StaffMember) => void
   onEditDetail?: (person: StaffMember, key: StaffDetailKey) => void
+  onSyncToScheduler?: () => void
 }) {
   const [sortKey, setSortKey] = useState<StaffSortKey>('name')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
@@ -678,7 +694,13 @@ function StaffRoster({
   }
 
   return (
-    <Panel title="Staff Roster" actionLabel={canEdit ? 'Add staff' : undefined} onAction={onAdd}>
+    <Panel
+      title="Staff Roster"
+      actionLabel={canEdit ? 'Add staff' : undefined}
+      onAction={onAdd}
+      secondaryLabel={canEdit && onSyncToScheduler ? 'Sync names to Scheduler' : undefined}
+      onSecondaryAction={onSyncToScheduler}
+    >
       <div className="mobile-sort-control">
         <label>
           <span>Sort roster</span>
@@ -1187,21 +1209,34 @@ function Panel({
   children,
   actionLabel,
   onAction,
+  secondaryLabel,
+  onSecondaryAction,
 }: {
   title: string
   children: React.ReactNode
   actionLabel?: string
   onAction?: () => void
+  secondaryLabel?: string
+  onSecondaryAction?: () => void
 }) {
   return (
     <section className="panel">
       <div className="panel-header">
         <h2>{title}</h2>
-        {actionLabel && (
-          <button className="primary" onClick={onAction}>
-            <Plus size={16} />
-            {actionLabel}
-          </button>
+        {(actionLabel || secondaryLabel) && (
+          <div className="panel-header-actions">
+            {secondaryLabel && (
+              <button type="button" className="secondary" onClick={onSecondaryAction}>
+                {secondaryLabel}
+              </button>
+            )}
+            {actionLabel && (
+              <button type="button" className="primary" onClick={onAction}>
+                <Plus size={16} />
+                {actionLabel}
+              </button>
+            )}
+          </div>
         )}
       </div>
       {children}
@@ -1299,6 +1334,7 @@ function addStaff(openForm: OpenForm, updateDb: UpdateDb, user: string) {
         },
         { action: 'Created', itemType: 'Staff', itemId: id, user, summary: `Added staff record for ${values.name}.` },
       )
+      void upsertSchedStaffByName(values.name, true)
     },
   })
 }
@@ -1342,6 +1378,7 @@ function editStaffDetail(
             summary: `Renamed ${person.name} to ${values.value}.`,
           },
         )
+        void renameSchedStaff(person.name, values.value)
       },
     })
     return
@@ -1402,6 +1439,7 @@ function editStaffDetail(
           summary: `Set ${config.label.toLowerCase()} for ${person.name} to ${values.value}.`,
         },
       )
+      if (key === 'active') void upsertSchedStaffByName(person.name, values.value === 'Active')
     },
   })
 }
